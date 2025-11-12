@@ -1,0 +1,264 @@
+[debug] [2025-11-11T09:33:11.804Z] ----------------------------------------------------------------------
+[debug] [2025-11-11T09:33:11.808Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2025-11-11T09:33:11.808Z] CLI Version:   14.24.2
+[debug] [2025-11-11T09:33:11.808Z] Platform:      win32
+[debug] [2025-11-11T09:33:11.808Z] Node Version:  v24.11.0
+[debug] [2025-11-11T09:33:11.808Z] Time:          Tue Nov 11 2025 15:03:11 GMT+0530 (India Standard Time)
+[debug] [2025-11-11T09:33:11.808Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-11-11T09:33:12.006Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-11T09:33:12.007Z] > authorizing via signed-in user (researchinnovation003@gmail.com)
+[debug] [2025-11-11T09:33:12.007Z] [iam] checking project gc-score for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-11-11T09:33:12.008Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:12.008Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:12.009Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions [none]
+[debug] [2025-11-11T09:33:12.009Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions x-goog-quota-user=projects/gc-score
+[debug] [2025-11-11T09:33:12.009Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-11T09:33:13.490Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions 200
+[debug] [2025-11-11T09:33:13.490Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-11T09:33:13.491Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:13.491Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:13.492Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/gc-score [none]
+[debug] [2025-11-11T09:33:14.141Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/gc-score 200
+[debug] [2025-11-11T09:33:14.141Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/gc-score {"projectId":"gc-score","projectNumber":"931498134631","displayName":"GC score","name":"projects/gc-score","resources":{"hostingSite":"gc-score","realtimeDatabaseInstance":"gc-score-default-rtdb"},"state":"ACTIVE","etag":"1_19bf7a21-b106-4a17-a839-d32407572174"}
+[info] 
+[info] === Deploying to 'gc-score'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2025-11-11T09:33:14.148Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:14.148Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:14.148Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions [none]
+[debug] [2025-11-11T09:33:14.148Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2025-11-11T09:33:17.117Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions 200
+[debug] [2025-11-11T09:33:17.117Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions {"name":"projects/931498134631/sites/gc-score/versions/090f8246fc456477","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[gc-score]: beginning deploy... 
+[info] i  hosting[gc-score]: found 3 files in . 
+[debug] [2025-11-11T09:33:35.473Z] [hosting] uploading with 200 concurrency
+[debug] [2025-11-11T09:33:35.473Z] [hosting] hash cache [] not populated
+[debug] [2025-11-11T09:33:35.485Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:35.485Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:35.486Z] [hosting] hash cache [] stored for 3 files
+[debug] [2025-11-11T09:33:35.486Z] [hosting][hash queue][FINAL] {"max":9,"min":4,"avg":5.666666666666667,"active":0,"complete":3,"success":3,"errored":0,"retried":0,"total":3,"elapsed":11}
+[debug] [2025-11-11T09:33:35.487Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/090f8246fc456477:populateFiles [none]
+[debug] [2025-11-11T09:33:35.487Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/090f8246fc456477:populateFiles {"files":{"/DEPLOY_NOW.txt":"6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe","/deploy.ps1":"f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488","/index.html":"345deddc5f48a595a92d4205e28de2b332064e9c5ab15608281cbe0ceb9fe29e"}}
+[debug] [2025-11-11T09:33:36.534Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/090f8246fc456477:populateFiles 200
+[debug] [2025-11-11T09:33:36.535Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/090f8246fc456477:populateFiles {"uploadRequiredHashes":["345deddc5f48a595a92d4205e28de2b332064e9c5ab15608281cbe0ceb9fe29e","6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe","f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files"}
+[debug] [2025-11-11T09:33:36.535Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:36.535Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:36.535Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:36.535Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:36.536Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:36.536Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:36.536Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/345deddc5f48a595a92d4205e28de2b332064e9c5ab15608281cbe0ceb9fe29e [none]
+[debug] [2025-11-11T09:33:36.536Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/345deddc5f48a595a92d4205e28de2b332064e9c5ab15608281cbe0ceb9fe29e [stream]
+[debug] [2025-11-11T09:33:36.537Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe [none]
+[debug] [2025-11-11T09:33:36.537Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe [stream]
+[debug] [2025-11-11T09:33:36.538Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488 [none]
+[debug] [2025-11-11T09:33:36.538Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488 [stream]
+[debug] [2025-11-11T09:33:36.540Z] [hosting][populate queue][FINAL] {"max":1052,"min":1052,"avg":1052,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":1056}
+[debug] [2025-11-11T09:33:36.540Z] [hosting] uploads queued: 3
+[debug] [2025-11-11T09:33:37.997Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe 200
+[debug] [2025-11-11T09:33:37.998Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe [stream]
+[debug] [2025-11-11T09:33:38.000Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/345deddc5f48a595a92d4205e28de2b332064e9c5ab15608281cbe0ceb9fe29e 200
+[debug] [2025-11-11T09:33:38.000Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/345deddc5f48a595a92d4205e28de2b332064e9c5ab15608281cbe0ceb9fe29e [stream]
+[debug] [2025-11-11T09:33:39.070Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488 200
+[debug] [2025-11-11T09:33:39.070Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/090f8246fc456477/files/f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488 [stream]
+[debug] [2025-11-11T09:33:39.070Z] [hosting][upload queue][FINAL] {"max":2535,"min":1463,"avg":1821,"active":0,"complete":3,"success":3,"errored":0,"retried":0,"total":3,"elapsed":2535}
+[info] +  hosting[gc-score]: file upload complete 
+[debug] [2025-11-11T09:33:39.072Z] [hosting] deploy completed after 3610ms
+[debug] [2025-11-11T09:33:39.073Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "basketball_scoresheet.html",
+        "registration.html",
+        "DEPLOYMENT_GUIDE.md",
+        "TIMER_DOCUMENTATION.md",
+        "IMPLEMENTATION_SUMMARY.md",
+        "README.md",
+        "FIREBASE_SETUP.md",
+        "firestore.rules"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000"
+            }
+          ]
+        }
+      ],
+      "site": "gc-score"
+    },
+    "version": "projects/931498134631/sites/gc-score/versions/090f8246fc456477"
+  }
+]
+[info] i  hosting[gc-score]: finalizing version... 
+[debug] [2025-11-11T09:33:39.075Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:39.075Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:39.076Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/090f8246fc456477 updateMask=status%2Cconfig
+[debug] [2025-11-11T09:33:39.076Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/090f8246fc456477 {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}],"headers":[{"glob":"**/*.@(js|css)","headers":{"Cache-Control":"max-age=31536000"}}]}}
+[debug] [2025-11-11T09:33:39.603Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/090f8246fc456477 200
+[debug] [2025-11-11T09:33:39.603Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/090f8246fc456477 {"name":"projects/931498134631/sites/gc-score/versions/090f8246fc456477","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"max-age=31536000"},"glob":"**/*.@(js|css)"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-11-11T09:33:17.479518Z","createUser":{"email":"researchinnovation003@gmail.com"},"finalizeTime":"2025-11-11T09:33:40.654616Z","finalizeUser":{"email":"researchinnovation003@gmail.com"}}
+[debug] [2025-11-11T09:33:39.603Z] [hosting] finalized version for gc-score:[object Object]
+[info] +  hosting[gc-score]: version finalized 
+[info] i  hosting[gc-score]: releasing new version... 
+[debug] [2025-11-11T09:33:39.604Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:39.604Z] Checked if tokens are valid: true, expires at: 1762857147880
+[debug] [2025-11-11T09:33:39.604Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases versionName=projects%2F931498134631%2Fsites%2Fgc-score%2Fversions%2F090f8246fc456477
+[debug] [2025-11-11T09:33:39.604Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases {}
+[debug] [2025-11-11T09:33:40.103Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases 200
+[debug] [2025-11-11T09:33:40.103Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases {"name":"projects/931498134631/sites/gc-score/channels/live/releases/1762853620575000","version":{"name":"projects/931498134631/sites/gc-score/versions/090f8246fc456477","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"max-age=31536000"},"glob":"**/*.@(js|css)"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-11-11T09:33:17.479518Z","createUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"},"finalizeTime":"2025-11-11T09:33:40.654616Z","finalizeUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}},"type":"DEPLOY","releaseTime":"2025-11-11T09:33:40.575Z","releaseUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}}
+[debug] [2025-11-11T09:33:40.103Z] [hosting] release: {"name":"projects/931498134631/sites/gc-score/channels/live/releases/1762853620575000","version":{"name":"projects/931498134631/sites/gc-score/versions/090f8246fc456477","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"max-age=31536000"},"glob":"**/*.@(js|css)"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-11-11T09:33:17.479518Z","createUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"},"finalizeTime":"2025-11-11T09:33:40.654616Z","finalizeUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}},"type":"DEPLOY","releaseTime":"2025-11-11T09:33:40.575Z","releaseUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}}
+[info] +  hosting[gc-score]: release complete 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/gc-score/overview
+[info] Hosting URL: https://gc-score.web.app
+[debug] [2025-11-11T09:33:45.202Z] Error: Timed out.
+    at Timeout._onTimeout (C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\lib\utils.js:275:49)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2025-11-11T13:13:34.942Z] ----------------------------------------------------------------------
+[debug] [2025-11-11T13:13:34.951Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2025-11-11T13:13:34.952Z] CLI Version:   14.24.2
+[debug] [2025-11-11T13:13:34.952Z] Platform:      win32
+[debug] [2025-11-11T13:13:34.952Z] Node Version:  v24.11.0
+[debug] [2025-11-11T13:13:34.952Z] Time:          Tue Nov 11 2025 18:43:34 GMT+0530 (India Standard Time)
+[debug] [2025-11-11T13:13:34.952Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-11-11T13:13:35.190Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-11T13:13:35.191Z] > authorizing via signed-in user (researchinnovation003@gmail.com)
+[debug] [2025-11-11T13:13:35.191Z] [iam] checking project gc-score for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-11-11T13:13:35.192Z] Checked if tokens are valid: false, expires at: 1762857147880
+[debug] [2025-11-11T13:13:35.192Z] Checked if tokens are valid: false, expires at: 1762857147880
+[debug] [2025-11-11T13:13:35.192Z] > refreshing access token with scopes: []
+[debug] [2025-11-11T13:13:35.194Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-11T13:13:35.194Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-11T13:13:36.519Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-11T13:13:36.520Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-11T13:13:36.527Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions [none]
+[debug] [2025-11-11T13:13:36.527Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions x-goog-quota-user=projects/gc-score
+[debug] [2025-11-11T13:13:36.527Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-11T13:13:38.047Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions 200
+[debug] [2025-11-11T13:13:38.047Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gc-score:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-11T13:13:38.048Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:38.048Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:38.048Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/gc-score [none]
+[debug] [2025-11-11T13:13:38.615Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/gc-score 200
+[debug] [2025-11-11T13:13:38.615Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/gc-score {"projectId":"gc-score","projectNumber":"931498134631","displayName":"GC score","name":"projects/gc-score","resources":{"hostingSite":"gc-score","realtimeDatabaseInstance":"gc-score-default-rtdb"},"state":"ACTIVE","etag":"1_19bf7a21-b106-4a17-a839-d32407572174"}
+[info] 
+[info] === Deploying to 'gc-score'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2025-11-11T13:13:38.623Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:38.623Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:38.623Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions [none]
+[debug] [2025-11-11T13:13:38.623Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2025-11-11T13:13:40.283Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions 200
+[debug] [2025-11-11T13:13:40.283Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions {"name":"projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[gc-score]: beginning deploy... 
+[info] i  hosting[gc-score]: found 3 files in . 
+[debug] [2025-11-11T13:13:40.301Z] [hosting] uploading with 200 concurrency
+[debug] [2025-11-11T13:13:40.313Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:40.313Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:40.314Z] [hosting] hash cache [] stored for 3 files
+[debug] [2025-11-11T13:13:40.314Z] [hosting][hash queue][FINAL] {"max":9,"min":0,"avg":3,"active":0,"complete":3,"success":3,"errored":0,"retried":0,"total":3,"elapsed":11}
+[debug] [2025-11-11T13:13:40.314Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb:populateFiles [none]
+[debug] [2025-11-11T13:13:40.314Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb:populateFiles {"files":{"/DEPLOY_NOW.txt":"6623f236fdf546e2d1c9d19f6be7fedaeafdd85ff1cfee1d6fffff05ca1ef3fe","/deploy.ps1":"f6353904eab51fb4bcc928b4443081be466f36a9e7d292da281c64e523443488","/index.html":"7d82d9c68b853f29a00f9d59a6f2136577f098fa36b21f7074eb6c4bca56f025"}}
+[debug] [2025-11-11T13:13:40.810Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb:populateFiles 200
+[debug] [2025-11-11T13:13:40.810Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb:populateFiles {"uploadRequiredHashes":["7d82d9c68b853f29a00f9d59a6f2136577f098fa36b21f7074eb6c4bca56f025"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/66e1b3295528d1fb/files"}
+[debug] [2025-11-11T13:13:40.811Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:40.811Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:40.811Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/66e1b3295528d1fb/files/7d82d9c68b853f29a00f9d59a6f2136577f098fa36b21f7074eb6c4bca56f025 [none]
+[debug] [2025-11-11T13:13:40.811Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/66e1b3295528d1fb/files/7d82d9c68b853f29a00f9d59a6f2136577f098fa36b21f7074eb6c4bca56f025 [stream]
+[debug] [2025-11-11T13:13:40.813Z] [hosting][populate queue][FINAL] {"max":498,"min":498,"avg":498,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":500}
+[debug] [2025-11-11T13:13:40.813Z] [hosting] uploads queued: 1
+[debug] [2025-11-11T13:13:42.432Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/66e1b3295528d1fb/files/7d82d9c68b853f29a00f9d59a6f2136577f098fa36b21f7074eb6c4bca56f025 200
+[debug] [2025-11-11T13:13:42.432Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/gc-score/versions/66e1b3295528d1fb/files/7d82d9c68b853f29a00f9d59a6f2136577f098fa36b21f7074eb6c4bca56f025 [stream]
+[debug] [2025-11-11T13:13:42.432Z] [hosting][upload queue][FINAL] {"max":1622,"min":1622,"avg":1622,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":1622}
+[info] +  hosting[gc-score]: file upload complete 
+[debug] [2025-11-11T13:13:42.434Z] [hosting] deploy completed after 2148ms
+[debug] [2025-11-11T13:13:42.434Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "basketball_scoresheet.html",
+        "registration.html",
+        "DEPLOYMENT_GUIDE.md",
+        "TIMER_DOCUMENTATION.md",
+        "IMPLEMENTATION_SUMMARY.md",
+        "README.md",
+        "FIREBASE_SETUP.md",
+        "firestore.rules"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000"
+            }
+          ]
+        }
+      ],
+      "site": "gc-score"
+    },
+    "version": "projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb"
+  }
+]
+[info] i  hosting[gc-score]: finalizing version... 
+[debug] [2025-11-11T13:13:42.436Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:42.437Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:42.437Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/66e1b3295528d1fb updateMask=status%2Cconfig
+[debug] [2025-11-11T13:13:42.437Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/66e1b3295528d1fb {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}],"headers":[{"glob":"**/*.@(js|css)","headers":{"Cache-Control":"max-age=31536000"}}]}}
+[debug] [2025-11-11T13:13:43.036Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/66e1b3295528d1fb 200
+[debug] [2025-11-11T13:13:43.036Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/versions/66e1b3295528d1fb {"name":"projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"max-age=31536000"},"glob":"**/*.@(js|css)"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-11-11T13:13:40.958201Z","createUser":{"email":"researchinnovation003@gmail.com"},"finalizeTime":"2025-11-11T13:13:44.075741Z","finalizeUser":{"email":"researchinnovation003@gmail.com"}}
+[debug] [2025-11-11T13:13:43.036Z] [hosting] finalized version for gc-score:[object Object]
+[info] +  hosting[gc-score]: version finalized 
+[info] i  hosting[gc-score]: releasing new version... 
+[debug] [2025-11-11T13:13:43.036Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:43.037Z] Checked if tokens are valid: true, expires at: 1762870415520
+[debug] [2025-11-11T13:13:43.037Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases versionName=projects%2F931498134631%2Fsites%2Fgc-score%2Fversions%2F66e1b3295528d1fb
+[debug] [2025-11-11T13:13:43.037Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases {}
+[debug] [2025-11-11T13:13:43.617Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases 200
+[debug] [2025-11-11T13:13:43.617Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/gc-score/channels/live/releases {"name":"projects/931498134631/sites/gc-score/channels/live/releases/1762866824079000","version":{"name":"projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"max-age=31536000"},"glob":"**/*.@(js|css)"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-11-11T13:13:40.958201Z","createUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"},"finalizeTime":"2025-11-11T13:13:44.075741Z","finalizeUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}},"type":"DEPLOY","releaseTime":"2025-11-11T13:13:44.079Z","releaseUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}}
+[debug] [2025-11-11T13:13:43.617Z] [hosting] release: {"name":"projects/931498134631/sites/gc-score/channels/live/releases/1762866824079000","version":{"name":"projects/931498134631/sites/gc-score/versions/66e1b3295528d1fb","status":"FINALIZED","config":{"headers":[{"headers":{"Cache-Control":"max-age=31536000"},"glob":"**/*.@(js|css)"}],"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2025-11-11T13:13:40.958201Z","createUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"},"finalizeTime":"2025-11-11T13:13:44.075741Z","finalizeUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}},"type":"DEPLOY","releaseTime":"2025-11-11T13:13:44.079Z","releaseUser":{"email":"researchinnovation003@gmail.com","imageUrl":"https://lh3.googleusercontent.com/a/ACg8ocLFWFUTFkyORzuQSNX0Zoga-tNie7XxTT8-Bj0K71JjhwkMRdc"}}
+[info] +  hosting[gc-score]: release complete 
+[info] 
+[info] +  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/gc-score/overview
+[info] Hosting URL: https://gc-score.web.app
+[debug] [2025-11-11T13:13:48.741Z] Error: Timed out.
+    at Timeout._onTimeout (C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\lib\utils.js:275:49)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+[error] 
+[error] Error: An unexpected error has occurred.

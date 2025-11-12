@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Basketball Score Sheet (FIBA-inspired)</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --panel: #121419;
+      --text: #e6e6e6;
+      --muted: #a7a7a7;
+      --accent: #2ea043;
+      --accent-2: #3b82f6;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --border: #1f2430;
+      --button: #1b1f2a;
+      --button-hover: #242b3a;
+      --input-bg: #111319;
+      --input-border: #2a2f3d;
+    }
+    body.light {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --text: #0b0c10;
+      --muted: #475569;
+      --accent: #15803d;
+      --accent-2: #1d4ed8;
+      --danger: #b91c1c;
+      --warn: #b45309;
+      --border: #e5e7eb;
+      --button: #f3f4f6;
+      --button-hover: #e5e7eb;
+      --input-bg: #ffffff;
+      --input-border: #d1d5db;
+    }
+
+    html, body { height: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .col { flex: 1 1 0; min-width: 280px; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .panel h2 { margin: 0 0 8px 0; font-size: 18px; }
+    .panel h3 { margin: 12px 0 8px 0; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .title { font-size: 18px; font-weight: 700; }
+
+    .btn { cursor: pointer; background: var(--button); color: var(--text); border: 1px solid var(--input-border); padding: 10px 12px; border-radius: 10px; font-weight: 600; transition: background .15s ease, transform .05s ease; user-select: none; }
+    .btn:active { transform: translateY(1px); }
+    .btn:hover { background: var(--button-hover); }
+    .btn.accent { background: var(--accent-2); border-color: transparent; color: white; }
+    .btn.accent:hover { filter: brightness(0.95); }
+    .btn.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+    .btn.warn { background: transparent; color: var(--warn); border-color: var(--warn); }
+    .btn.block { width: 100%; }
+    .btn.sm { padding: 6px 8px; border-radius: 8px; font-size: 12px; }
+    .btn.lg { padding: 16px 18px; font-size: 18px; border-radius: 12px; }
+
+    .input, select, .datetime { width: 100%; padding: 10px 12px; border-radius: 10px; color: var(--text); background: var(--input-bg); border: 1px solid var(--input-border); outline: none; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+    .label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+    .scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+    .score { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; }
+    .score .team { font-size: 12px; color: var(--muted); }
+    .score .value { font-size: 44px; font-weight: 800; line-height: 1; }
+    .score .period { font-size: 12px; color: var(--muted); }
+
+    .big-actions { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tab { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--button); cursor: pointer; user-select: none; font-weight: 600; }
+    .tab.active { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid var(--border); padding: 8px; font-size: 14px; }
+    th { text-align: left; color: var(--muted); font-weight: 600; }
+    .table-actions { display: flex; gap: 6px; }
+
+    .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { min-width: 32px; text-align: center; padding: 6px 8px; border-radius: 10px; background: var(--button); border: 1px solid var(--input-border); cursor: pointer; user-select: none; }
+    .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .summary { border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+    .summary .head { background: var(--panel); padding: 10px 12px; font-weight: 700; display: flex; justify-content: space-between; }
+    .summary table { background: var(--panel); }
+    .winner { outline: 2px solid var(--accent); border-radius: 8px; }
+
+    .muted { color: var(--muted); }
+
+    .section { margin-bottom: 12px; }
+
+    .stack-sm { display: grid; gap: 6px; }
+    .stack-md { display: grid; gap: 10px; }
+
+    .hidden { display: none !important; }
+
+    /* Print styles: generate a clean FIBA-like sheet */
+    @media print {
+      body { background: white; color: black; }
+      .no-print { display: none !important; }
+      .container { max-width: none; }
+      .panel, .summary { border: 1px solid #000 !important; }
+      .score .value { font-size: 36px; }
+      .btn, .tab { display: none !important; }
+      .input, select, .datetime { border: 1px solid #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div class="toolbar">
+      <div class="title">Basketball Score Sheet — FIBA Inspired</div>
+      <div class="no-print" style="display:flex; gap:8px; align-items:center;">
+        <button class="btn" id="toggleThemeBtn" title="Toggle dark/light">Toggle Theme</button>
+        <button class="btn warn" id="newGameBtn" title="Clear all data">New Game</button>
+        <button class="btn" id="saveBtn" title="Save to browser">Save</button>
+        <a class="btn" href="registration.html" title="Open Registration">Registration</a>
+        <button class="btn accent" id="exportPdfBtn" title="Print or Save as PDF">Export as PDF</button>
+      </div>
+    </div>
+
+    <!-- Game Setup -->
+    <div class="panel section" id="setupPanel">
+      <h2>Game Setup</h2>
+      <div class="grid3">
+        <div class="stack-sm">
+          <label class="label" for="competition">Competition</label>
+          <input class="input" id="competition" placeholder="e.g., National League" />
+        </div>
+        <div class="stack-sm">
+          <label class="label" for="gameNumber">Game #</label>
+          <input class="input" id="gameNumber" placeholder="e.g., 42" />
+        </div>
+        <div class="stack-sm">
+          <label class="label" for="place">Place</label>
+          <input class="input" id="place" placeholder="Arena name" />
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:8px;">
+        <div class="stack-sm">
+          <label class="label" for="dateTime">Date & Time</label>
+          <input class="input" id="dateTime" type="datetime-local" />
+        </div>
+        <div class="stack-sm">
+          <label class="label" for="referees">Referees</label>
+          <input class="input" id="referees" placeholder="Referee 1; Referee 2; Referee 3" />
+        </div>
+        <div></div>
+      </div>
+      <div class="grid2" style="margin-top:8px;">
+        <div class="stack-sm">
+          <label class="label" for="teamAName">Team A</label>
+          <input class="input" id="teamAName" placeholder="Team A" />
+        </div>
+        <div class="stack-sm">
+          <label class="label" for="teamBName">Team B</label>
+          <input class="input" id="teamBName" placeholder="Team B" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Scoreboard & Periods -->
+    <div class="panel section">
+      <h2>Scoreboard</h2>
+      <div class="scoreboard">
+        <div class="score" id="scoreA">
+          <div class="team" id="labelTeamA">Team A</div>
+          <div class="value" id="totalA">0</div>
+          <div class="period"><span id="perA1">P1: 0</span> | <span id="perA2">P2: 0</span> | <span id="perA3">P3: 0</span> | <span id="perA4">P4: 0</span></div>
+        </div>
+        <div style="text-align:center; font-weight:700;" id="currentPeriodLabel">P1</div>
+        <div class="score" id="scoreB">
+          <div class="team" id="labelTeamB">Team B</div>
+          <div class="value" id="totalB">0</div>
+          <div class="period"><span id="perB1">P1: 0</span> | <span id="perB2">P2: 0</span> | <span id="perB3">P3: 0</span> | <span id="perB4">P4: 0</span></div>
+        </div>
+      </div>
+
+      <div class="tabs no-print" id="periodTabs" style="margin-top:8px;"></div>
+
+      <div class="row" style="margin-top:8px;">
+        <div class="col">
+          <div class="panel">
+            <h3 id="teamALabel">Team A Scoring</h3>
+            <div class="big-actions">
+              <button class="btn lg accent" data-score="A" data-pts="1">+1</button>
+              <button class="btn lg accent" data-score="A" data-pts="2">+2</button>
+              <button class="btn lg accent" data-score="A" data-pts="3">+3</button>
+            </div>
+            <h3 style="margin-top:12px;">Team Fouls (Period)</h3>
+            <div class="chip-row" id="teamAFoulsChips"></div>
+            <h3 style="margin-top:12px;">Timeouts (Period)</h3>
+            <div class="chip-row" id="teamATimeoutsChips"></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="panel">
+            <h3 id="teamBLabel">Team B Scoring</h3>
+            <div class="big-actions">
+              <button class="btn lg accent" data-score="B" data-pts="1">+1</button>
+              <button class="btn lg accent" data-score="B" data-pts="2">+2</button>
+              <button class="btn lg accent" data-score="B" data-pts="3">+3</button>
+            </div>
+            <h3 style="margin-top:12px;">Team Fouls (Period)</h3>
+            <div class="chip-row" id="teamBFoulsChips"></div>
+            <h3 style="margin-top:12px;">Timeouts (Period)</h3>
+            <div class="chip-row" id="teamBTimeoutsChips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teams & Players -->
+    <div class="row section">
+      <div class="col">
+        <div class="panel" id="teamAPanel">
+          <h2>Team A — Players</h2>
+          <div class="grid2">
+            <div class="stack-sm">
+              <label class="label" for="coachA">Coach</label>
+              <input class="input" id="coachA" />
+            </div>
+            <div class="stack-sm">
+              <label class="label" for="asstCoachA">Assistant Coach</label>
+              <input class="input" id="asstCoachA" />
+            </div>
+          </div>
+          <div class="stack-sm no-print" style="margin-top:8px;">
+            <div class="label">Load from School Registry</div>
+            <div class="grid3">
+              <input class="input" id="schoolA" placeholder="School name" list="schoolsList" />
+              <input class="input" id="categoryA" placeholder="Category (e.g., Varsity)" list="categoriesListA" />
+              <button class="btn" id="loadAFromRegistry">Load</button>
+            </div>
+          </div>
+          <div style="margin-top:8px; overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:72px;">#</th>
+                  <th>Name</th>
+                  <th style="width:170px;">Fouls</th>
+                  <th style="width:70px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="teamAPlayers"></tbody>
+            </table>
+          </div>
+          <div class="no-print" style="margin-top:8px; display:flex; gap:8px;">
+            <button class="btn" id="addAPlayer">Add Player</button>
+            <span class="muted">Max 15 players.</span>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel" id="teamBPanel">
+          <h2>Team B — Players</h2>
+          <div class="grid2">
+            <div class="stack-sm">
+              <label class="label" for="coachB">Coach</label>
+              <input class="input" id="coachB" />
+            </div>
+            <div class="stack-sm">
+              <label class="label" for="asstCoachB">Assistant Coach</label>
+              <input class="input" id="asstCoachB" />
+            </div>
+          </div>
+          <div class="stack-sm no-print" style="margin-top:8px;">
+            <div class="label">Load from School Registry</div>
+            <div class="grid3">
+              <input class="input" id="schoolB" placeholder="School name" list="schoolsList" />
+              <input class="input" id="categoryB" placeholder="Category (e.g., Varsity)" list="categoriesListB" />
+              <button class="btn" id="loadBFromRegistry">Load</button>
+            </div>
+          </div>
+          <div style="margin-top:8px; overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:72px;">#</th>
+                  <th>Name</th>
+                  <th style="width:170px;">Fouls</th>
+                  <th style="width:70px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="teamBPlayers"></tbody>
+            </table>
+          </div>
+          <div class="no-print" style="margin-top:8px; display:flex; gap:8px;">
+            <button class="btn" id="addBPlayer">Add Player</button>
+            <span class="muted">Max 15 players.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="panel section" id="summaryPanel">
+      <h2>Summary</h2>
+      <div class="summary" id="summaryBlock">
+        <div class="head">
+          <div>
+            <div><strong>Competition:</strong> <span id="sumCompetition">—</span></div>
+            <div><strong>Game #:</strong> <span id="sumGameNumber">—</span> | <strong>Place:</strong> <span id="sumPlace">—</span></div>
+            <div><strong>Date & Time:</strong> <span id="sumDateTime">—</span></div>
+            <div><strong>Referees:</strong> <span id="sumReferees">—</span></div>
+          </div>
+          <div>
+            <div><strong id="sumTeamALabel">Team A</strong> vs <strong id="sumTeamBLabel">Team B</strong></div>
+            <div><strong>Total:</strong> <span id="sumTotalA">0</span> - <span id="sumTotalB">0</span></div>
+          </div>
+        </div>
+        <div style="padding: 12px;">
+          <div style="overflow:auto;">
+            <table id="periodBreakdownTable">
+              <thead>
+                <tr id="periodHeaderRow">
+                  <th>Team</th>
+                  <th>P1</th>
+                  <th>P2</th>
+                  <th>P3</th>
+                  <th>P4</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="rowTeamA">
+                  <td id="rowTeamAName">Team A</td>
+                  <td id="rowA_P1">0</td>
+                  <td id="rowA_P2">0</td>
+                  <td id="rowA_P3">0</td>
+                  <td id="rowA_P4">0</td>
+                </tr>
+                <tr id="rowTeamB">
+                  <td id="rowTeamBName">Team B</td>
+                  <td id="rowB_P1">0</td>
+                  <td id="rowB_P2">0</td>
+                  <td id="rowB_P3">0</td>
+                  <td id="rowB_P4">0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional: Timers -->
+    <div class="panel section no-print" id="timersPanel">
+      <h2>Timers (Optional)</h2>
+      <div class="row">
+        <div class="col">
+          <div class="stack-sm">
+            <div class="label">Match Timer (mm:ss)</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input class="input" id="matchMinutes" type="number" min="0" value="10" style="width:90px;" />
+              <div id="matchClock" style="font-weight:800; font-size:24px; min-width:100px; text-align:center;">10:00</div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn sm" id="matchStart">Start</button>
+                <button class="btn sm" id="matchPause">Pause</button>
+                <button class="btn sm" id="matchReset">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="stack-sm">
+            <div class="label">Shot Clock (24s)</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div id="shotClock" style="font-weight:800; font-size:24px; min-width:60px; text-align:center;">24</div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn sm" id="shotStart">Start</button>
+                <button class="btn sm" id="shotPause">Pause</button>
+                <button class="btn sm" id="shotReset">Reset</button>
+                <button class="btn sm" id="shotTo14">14s</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global datalists for registry suggestions -->
+    <datalist id="schoolsList"></datalist>
+    <datalist id="categoriesListA"></datalist>
+    <datalist id="categoriesListB"></datalist>
+  </div>
+
+  <script>
+    // --- State Management ---
+    const MAX_PLAYERS = 15;
+    const PERSONAL_FOUL_LIMIT = 5; // configurable
+    const TEAM_FOUL_LIMIT = 5; // per period display limit
+
+    const defaultState = () => ({
+      theme: 'dark',
+      setup: {
+        competition: '', gameNumber: '', place: '', dateTime: '', referees: '',
+        teamAName: 'Team A', teamBName: 'Team B', coachA: '', asstCoachA: '', coachB: '', asstCoachB: ''
+      },
+      teams: {
+        A: { players: [], },
+        B: { players: [], },
+      },
+      periods: ['P1','P2','P3','P4'],
+      currentPeriod: 0,
+      scores: { P1: {A:0,B:0}, P2: {A:0,B:0}, P3: {A:0,B:0}, P4: {A:0,B:0} },
+      teamFouls: { P1: {A:0,B:0}, P2: {A:0,B:0}, P3: {A:0,B:0}, P4: {A:0,B:0} },
+      timeouts: { P1: {A:0,B:0}, P2: {A:0,B:0}, P3: {A:0,B:0}, P4: {A:0,B:0} },
+      timers: { match: { running:false, remainingMs: 10*60*1000, lastTick: 0 }, shot: { running:false, remainingMs: 24*1000, lastTick: 0 } }
+    });
+
+    let state = loadState() || defaultState();
+
+    function allowedTimeoutsForPeriod(index) {
+      // FIBA: Q1-Q3: 2, Q4: 3, each OT: 1
+      if (index < 3) return 2;
+      if (index === 3) return 3;
+      return 1;
+    }
+
+    function ensurePeriodStructures() {
+      state.periods.forEach(pid => {
+        if (!state.scores[pid]) state.scores[pid] = {A:0,B:0};
+        if (!state.teamFouls[pid]) state.teamFouls[pid] = {A:0,B:0};
+        if (!state.timeouts[pid]) state.timeouts[pid] = {A:0,B:0};
+      });
+    }
+
+    // --- Persistence ---
+    function saveState() {
+      try { localStorage.setItem('fiba_scoresheet_state', JSON.stringify(state)); } catch {}
+      flashSaved();
+    }
+    function loadState() {
+      try { const raw = localStorage.getItem('fiba_scoresheet_state'); if (!raw) return null; return JSON.parse(raw); } catch { return null; }
+    }
+    function resetState() { state = defaultState(); saveState(); renderAll(); }
+
+    // --- UI Helpers ---
+    function $(id){ return document.getElementById(id); }
+    function el(tag, attrs={}, children=[]) {
+      const e = document.createElement(tag);
+      Object.entries(attrs).forEach(([k,v])=>{
+        if (k === 'class') e.className = v;
+        else if (k === 'text') e.textContent = v;
+        else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.substring(2), v);
+        else e.setAttribute(k, v);
+      });
+      children.forEach(c => e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
+      return e;
+    }
+
+    let saveFlashTo = null;
+    function flashSaved(){
+      const btn = $('saveBtn');
+      if (!btn) return;
+      const old = btn.textContent;
+      btn.textContent = 'Saved';
+      clearTimeout(saveFlashTo);
+      saveFlashTo = setTimeout(()=> btn.textContent = old, 900);
+    }
+
+    function formatDateTime(dt) {
+      if (!dt) return '—';
+      try { return new Date(dt).toLocaleString(); } catch { return dt; }
+    }
+
+    // --- Render Functions ---
+    function renderTheme(){
+      document.body.classList.toggle('light', state.theme === 'light');
+    }
+
+    function renderSetup(){
+      $('competition').value = state.setup.competition;
+      $('gameNumber').value = state.setup.gameNumber;
+      $('place').value = state.setup.place;
+      $('dateTime').value = state.setup.dateTime;
+      $('referees').value = state.setup.referees;
+      $('teamAName').value = state.setup.teamAName;
+      $('teamBName').value = state.setup.teamBName;
+      $('coachA').value = state.setup.coachA;
+      $('asstCoachA').value = state.setup.asstCoachA;
+      $('coachB').value = state.setup.coachB;
+      $('asstCoachB').value = state.setup.asstCoachB;
+
+      // Labels
+      $('labelTeamA').textContent = state.setup.teamAName || 'Team A';
+      $('labelTeamB').textContent = state.setup.teamBName || 'Team B';
+      $('teamALabel').textContent = (state.setup.teamAName || 'Team A') + ' Scoring';
+      $('teamBLabel').textContent = (state.setup.teamBName || 'Team B') + ' Scoring';
+      $('sumTeamALabel').textContent = state.setup.teamAName || 'Team A';
+      $('sumTeamBLabel').textContent = state.setup.teamBName || 'Team B';
+      $('rowTeamAName').textContent = state.setup.teamAName || 'Team A';
+      $('rowTeamBName').textContent = state.setup.teamBName || 'Team B';
+
+      // Summary meta
+      $('sumCompetition').textContent = state.setup.competition || '—';
+      $('sumGameNumber').textContent = state.setup.gameNumber || '—';
+      $('sumPlace').textContent = state.setup.place || '—';
+      $('sumDateTime').textContent = state.setup.dateTime ? formatDateTime(state.setup.dateTime) : '—';
+      $('sumReferees').textContent = state.setup.referees || '—';
+    }
+
+    function renderPeriodTabs(){
+      ensurePeriodStructures();
+      const tabs = $('periodTabs');
+      tabs.innerHTML = '';
+      state.periods.forEach((pid, idx) => {
+        const b = el('button', { class: 'tab' + (state.currentPeriod===idx?' active':''), onclick: () => { state.currentPeriod = idx; renderAll(); } }, [document.createTextNode(pid)]);
+        tabs.appendChild(b);
+      });
+      const extraBtn = el('button', { class:'tab', onclick: addExtraPeriod }, [document.createTextNode('+ Extra')]);
+      tabs.appendChild(extraBtn);
+
+      $('currentPeriodLabel').textContent = state.periods[state.currentPeriod] || '—';
+
+      // Extend summary header columns when extra periods exist
+      renderSummaryPeriodHeader();
+    }
+
+    function addExtraPeriod(){
+      const n = state.periods.length + 1;
+      const pid = 'OT' + (n - 4);
+      state.periods.push(pid);
+      state.scores[pid] = {A:0,B:0};
+      state.teamFouls[pid] = {A:0,B:0};
+      state.timeouts[pid] = {A:0,B:0};
+      // Add columns to summary table rows
+      renderAll();
+      saveState();
+    }
+
+    function renderTeamFoulsAndTimeouts(){
+      const idx = state.currentPeriod;
+      const pid = state.periods[idx];
+      const limit = TEAM_FOUL_LIMIT;
+
+      // Team fouls chips
+      function buildFouls(team){
+        const cont = team==='A' ? $('teamAFoulsChips') : $('teamBFoulsChips');
+        cont.innerHTML = '';
+        const count = state.teamFouls[pid][team] || 0;
+        for (let i=1;i<=limit;i++){
+          const active = i<=count;
+          cont.appendChild(el('div', { class:'chip'+(active?' active':''), onclick: ()=>{
+            const cur = state.teamFouls[pid][team] || 0;
+            state.teamFouls[pid][team] = (i===cur ? i-1 : i); // toggle current chip
+            renderTeamFoulsAndTimeouts(); renderSummary(); saveState();
+          } }, [document.createTextNode(String(i))]));
+        }
+        const reset = el('button', { class:'btn sm', onclick: ()=>{ state.teamFouls[pid][team]=0; renderTeamFoulsAndTimeouts(); renderSummary(); saveState(); } }, [document.createTextNode('Reset')]);
+        cont.appendChild(reset);
+      }
+      buildFouls('A');
+      buildFouls('B');
+
+      // Timeouts per period chips
+      function allowedTo(idx){ return allowedTimeoutsForPeriod(idx); }
+      function buildTimeouts(team){
+        const cont = team==='A' ? $('teamATimeoutsChips') : $('teamBTimeoutsChips');
+        cont.innerHTML = '';
+        const used = state.timeouts[pid][team] || 0;
+        const max = allowedTo(idx);
+        for (let i=1;i<=max;i++){
+          const active = i<=used;
+          cont.appendChild(el('div', { class:'chip'+(active?' active':''), onclick: ()=>{
+            const cur = state.timeouts[pid][team] || 0;
+            if (i===cur) state.timeouts[pid][team] = i-1; else state.timeouts[pid][team] = i;
+            renderTeamFoulsAndTimeouts(); renderSummary(); saveState();
+          } }, [document.createTextNode('TO')]))
+        }
+        const reset = el('button', { class:'btn sm', onclick: ()=>{ state.timeouts[pid][team]=0; renderTeamFoulsAndTimeouts(); renderSummary(); saveState(); } }, [document.createTextNode('Reset')]);
+        cont.appendChild(reset);
+      }
+      buildTimeouts('A');
+      buildTimeouts('B');
+    }
+
+    function renderScores(){
+      // Totals
+      const totals = state.periods.reduce((acc, pid)=>{ acc.A += state.scores[pid]?.A||0; acc.B += state.scores[pid]?.B||0; return acc; }, {A:0,B:0});
+      $('totalA').textContent = totals.A;
+      $('totalB').textContent = totals.B;
+
+      // Per period small labels (first 4 shown near scoreboard)
+      for (let i=1;i<=4;i++){
+        const pid = state.periods[i-1] || ('P'+i);
+        const sc = state.scores[pid] || {A:0,B:0};
+        const aEl = $('perA'+i); if (aEl) aEl.textContent = (pid+': '+(sc.A||0));
+        const bEl = $('perB'+i); if (bEl) bEl.textContent = (pid+': '+(sc.B||0));
+      }
+
+      // Summary totals + winner highlight
+      $('sumTotalA').textContent = totals.A;
+      $('sumTotalB').textContent = totals.B;
+      const rowA = $('rowTeamA');
+      const rowB = $('rowTeamB');
+      rowA.classList.toggle('winner', totals.A > totals.B);
+      rowB.classList.toggle('winner', totals.B > totals.A);
+    }
+
+    function renderPlayerTables(){
+      const tbodyA = $('teamAPlayers');
+      const tbodyB = $('teamBPlayers');
+
+      function rowForPlayer(team, idx, player){
+        const tr = document.createElement('tr');
+
+        // Jersey
+        const tdNum = document.createElement('td');
+        const numIn = el('input', { class:'input', value: player.number||'', placeholder:'#', inputmode:'numeric' });
+        numIn.addEventListener('input', ()=>{ player.number = numIn.value.slice(0,3); saveState(); });
+        tdNum.appendChild(numIn);
+
+        // Name
+        const tdName = document.createElement('td');
+        const nameIn = el('input', { class:'input', value: player.name||'', placeholder:'Name (optional)' });
+        nameIn.addEventListener('input', ()=>{ player.name = nameIn.value; saveState(); });
+        tdName.appendChild(nameIn);
+
+        // Fouls controls
+        const tdFouls = document.createElement('td');
+        const ctr = el('div', { style:'display:flex; gap:6px; align-items:center;' });
+        const dec = el('button', { class:'btn sm', onclick: ()=>{ player.fouls = Math.max(0, (player.fouls||0)-1); renderPlayerTables(); saveState(); } }, [document.createTextNode('-')]);
+        const disp = el('div', { class:'chip'+((player.fouls||0)>=PERSONAL_FOUL_LIMIT?' active':''), title:'Tap + to add foul' }, [document.createTextNode(String(player.fouls||0))]);
+        const inc = el('button', { class:'btn sm', onclick: ()=>{ player.fouls = Math.min(PERSONAL_FOUL_LIMIT, (player.fouls||0)+1); renderPlayerTables(); saveState(); } }, [document.createTextNode('+')]);
+        if ((player.fouls||0) >= PERSONAL_FOUL_LIMIT) disp.style.background = 'var(--danger)', disp.style.color='#fff';
+        ctr.appendChild(dec); ctr.appendChild(disp); ctr.appendChild(inc);
+        tdFouls.appendChild(ctr);
+
+        // Actions
+        const tdAct = document.createElement('td');
+        const del = el('button', { class:'btn sm danger', onclick: ()=>{ const list = state.teams[team].players; list.splice(idx,1); renderPlayerTables(); saveState(); } }, [document.createTextNode('Remove')]);
+        tdAct.appendChild(del);
+
+        tr.appendChild(tdNum); tr.appendChild(tdName); tr.appendChild(tdFouls); tr.appendChild(tdAct);
+        return tr;
+      }
+
+      tbodyA.innerHTML = '';
+      state.teams.A.players.forEach((p, i)=> tbodyA.appendChild(rowForPlayer('A', i, p)) );
+      tbodyB.innerHTML = '';
+      state.teams.B.players.forEach((p, i)=> tbodyB.appendChild(rowForPlayer('B', i, p)) );
+
+      // Disable add buttons if max reached
+      $('addAPlayer').disabled = state.teams.A.players.length >= MAX_PLAYERS;
+      $('addBPlayer').disabled = state.teams.B.players.length >= MAX_PLAYERS;
+    }
+
+    function renderSummaryPeriodHeader(){
+      const headRow = $('periodHeaderRow');
+      const tbodyA = $('rowTeamA');
+      const tbodyB = $('rowTeamB');
+
+      // Reset to only Team col
+      headRow.innerHTML = '<th>Team</th>';
+      tbodyA.innerHTML = '<td id="rowTeamAName">'+(state.setup.teamAName||'Team A')+'</td>';
+      tbodyB.innerHTML = '<td id="rowTeamBName">'+(state.setup.teamBName||'Team B')+'</td>';
+
+      // Add a col for each period
+      state.periods.forEach((pid)=>{
+        const th = document.createElement('th'); th.textContent = pid; headRow.appendChild(th);
+        const a = document.createElement('td'); a.id = 'rowA_'+pid; a.textContent = state.scores[pid]?.A||0; tbodyA.appendChild(a);
+        const b = document.createElement('td'); b.id = 'rowB_'+pid; b.textContent = state.scores[pid]?.B||0; tbodyB.appendChild(b);
+      });
+    }
+
+    function renderSummary(){
+      // Update per-period cells after header ensured
+      state.periods.forEach((pid)=>{
+        const aEl = $('rowA_'+pid); if (aEl) aEl.textContent = state.scores[pid]?.A||0;
+        const bEl = $('rowB_'+pid); if (bEl) bEl.textContent = state.scores[pid]?.B||0;
+      });
+      renderScores();
+    }
+
+    function renderAll(){
+      renderTheme();
+      renderSetup();
+      renderPeriodTabs();
+      renderTeamFoulsAndTimeouts();
+      renderPlayerTables();
+      renderSummary();
+    }
+
+    // --- Interaction Wiring ---
+    function wireSetupInputs(){
+      const map = [
+        ['competition','competition'], ['gameNumber','gameNumber'], ['place','place'], ['dateTime','dateTime'], ['referees','referees'],
+        ['teamAName','teamAName'], ['teamBName','teamBName'],
+        ['coachA','coachA'], ['asstCoachA','asstCoachA'], ['coachB','coachB'], ['asstCoachB','asstCoachB']
+      ];
+      map.forEach(([id,key])=>{
+        $(id).addEventListener('input', ()=>{ state.setup[key] = $(id).value; renderSetup(); renderSummary(); saveState(); });
+      });
+    }
+
+    function wireScoreButtons(){
+      document.querySelectorAll('[data-score]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const team = btn.getAttribute('data-score');
+          const pts = parseInt(btn.getAttribute('data-pts'),10);
+          const pid = state.periods[state.currentPeriod];
+          state.scores[pid][team] = (state.scores[pid][team]||0) + pts;
+          renderSummary(); saveState();
+        });
+      });
+    }
+
+    function wireRosterButtons(){
+      $('addAPlayer').addEventListener('click', ()=>{
+        if (state.teams.A.players.length >= MAX_PLAYERS) return;
+        state.teams.A.players.push({number:'', name:'', fouls:0});
+        renderPlayerTables(); saveState();
+      });
+      $('addBPlayer').addEventListener('click', ()=>{
+        if (state.teams.B.players.length >= MAX_PLAYERS) return;
+        state.teams.B.players.push({number:'', name:'', fouls:0});
+        renderPlayerTables(); saveState();
+      });
+    }
+
+    function wireTopBar(){
+      $('toggleThemeBtn').addEventListener('click', ()=>{ state.theme = state.theme==='dark'?'light':'dark'; renderTheme(); saveState(); });
+      $('newGameBtn').addEventListener('click', ()=>{ if (confirm('Start a new game? This will clear current data.')) { resetState(); } });
+      $('saveBtn').addEventListener('click', saveState);
+      $('exportPdfBtn').addEventListener('click', ()=>{ window.print(); });
+    }
+
+    // --- School Registry Linking ---
+    const REG_KEY = 'school_registry_v1';
+    function getRegistry(){
+      try { const r = JSON.parse(localStorage.getItem(REG_KEY) || '{}'); return { schools: r.schools || {} }; } catch { return { schools: {} }; }
+    }
+    function refreshSchoolOptions(){
+      const dl = document.getElementById('schoolsList'); if (!dl) return; dl.innerHTML='';
+      const reg = getRegistry(); Object.keys(reg.schools).sort().forEach(name=>{
+        const opt = document.createElement('option'); opt.value = name; dl.appendChild(opt);
+      });
+    }
+    function refreshCategoryOptionsForTeam(team){
+      const schoolIn = $(team==='A' ? 'schoolA' : 'schoolB');
+      const dl = $(team==='A' ? 'categoriesListA' : 'categoriesListB');
+      if (!schoolIn || !dl) return; dl.innerHTML='';
+      const reg = getRegistry();
+      const school = (schoolIn.value||'').trim();
+      const cats = Object.keys((reg.schools[school]||{}).categories||{}).sort();
+      cats.forEach(c=>{ const o = document.createElement('option'); o.value=c; dl.appendChild(o); });
+    }
+    function loadFromRegistry(team){
+      const school = $(team==='A'?'schoolA':'schoolB').value.trim();
+      const categoryIn = $(team==='A'?'categoryA':'categoryB');
+      const category = (categoryIn.value||'').trim();
+      const reg = getRegistry();
+      if (!reg.schools[school]){ alert('School not found in registry'); return; }
+      const availableCats = Object.keys(reg.schools[school].categories||{});
+      let catName = category;
+      if (!catName){
+        if (availableCats.length === 1) catName = availableCats[0];
+        else { alert('Please specify category. Available: '+availableCats.join(', ')); return; }
+      }
+      const cat = reg.schools[school].categories[catName];
+      if (!cat){ alert('Category not found for this school'); return; }
+
+      // Apply to team
+      const targetTeam = state.teams[team];
+      targetTeam.players = (cat.players||[]).slice(0, MAX_PLAYERS).map(p=>({ number: p.number||'', name: p.name||'', fouls: 0 }));
+
+      // Set team name and coaches
+      if (team==='A'){
+        state.setup.teamAName = school;
+        state.setup.coachA = cat.coach || '';
+        state.setup.asstCoachA = cat.asstCoach || '';
+      } else {
+        state.setup.teamBName = school;
+        state.setup.coachB = cat.coach || '';
+        state.setup.asstCoachB = cat.asstCoach || '';
+      }
+
+      renderSetup();
+      renderPlayerTables();
+      saveState();
+    }
+    function wireRegistryLoaders(){
+      const aBtn = $('loadAFromRegistry'); if (aBtn) aBtn.addEventListener('click', ()=> loadFromRegistry('A'));
+      const bBtn = $('loadBFromRegistry'); if (bBtn) bBtn.addEventListener('click', ()=> loadFromRegistry('B'));
+      const sA = $('schoolA'); if (sA) sA.addEventListener('input', ()=> refreshCategoryOptionsForTeam('A'));
+      const sB = $('schoolB'); if (sB) sB.addEventListener('input', ()=> refreshCategoryOptionsForTeam('B'));
+      refreshSchoolOptions();
+      refreshCategoryOptionsForTeam('A');
+      refreshCategoryOptionsForTeam('B');
+    }
+
+    // Timers
+    let rafId = 0;
+    function tick(now){
+      // Match timer
+      if (state.timers.match.running){
+        const dt = state.timers.match.lastTick ? now - state.timers.match.lastTick : 0;
+        state.timers.match.lastTick = now;
+        state.timers.match.remainingMs = Math.max(0, state.timers.match.remainingMs - dt);
+        if (state.timers.match.remainingMs === 0) state.timers.match.running = false;
+        updateMatchClock();
+      }
+      // Shot clock
+      if (state.timers.shot.running){
+        const dt = state.timers.shot.lastTick ? now - state.timers.shot.lastTick : 0;
+        state.timers.shot.lastTick = now;
+        state.timers.shot.remainingMs = Math.max(0, state.timers.shot.remainingMs - dt);
+        if (state.timers.shot.remainingMs === 0) state.timers.shot.running = false;
+        updateShotClock();
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function msToMinSec(ms){
+      const total = Math.ceil(ms/1000);
+      const m = Math.floor(total/60);
+      const s = total%60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+    function updateMatchClock(){ $('matchClock').textContent = msToMinSec(state.timers.match.remainingMs); }
+    function updateShotClock(){ $('shotClock').textContent = Math.ceil(state.timers.shot.remainingMs/1000); }
+
+    function wireTimers(){
+      $('matchMinutes').addEventListener('change', ()=>{
+        const v = Math.max(0, parseInt($('matchMinutes').value||'0',10));
+        state.timers.match.remainingMs = v*60*1000; state.timers.match.running=false; state.timers.match.lastTick=0; updateMatchClock(); saveState();
+      });
+      $('matchStart').addEventListener('click', ()=>{ state.timers.match.running=true; state.timers.match.lastTick=performance.now(); });
+      $('matchPause').addEventListener('click', ()=>{ state.timers.match.running=false; state.timers.match.lastTick=0; saveState(); });
+      $('matchReset').addEventListener('click', ()=>{ const v = Math.max(0, parseInt($('matchMinutes').value||'0',10)); state.timers.match.running=false; state.timers.match.lastTick=0; state.timers.match.remainingMs=v*60*1000; updateMatchClock(); saveState(); });
+
+      $('shotStart').addEventListener('click', ()=>{ state.timers.shot.running=true; state.timers.shot.lastTick=performance.now(); });
+      $('shotPause').addEventListener('click', ()=>{ state.timers.shot.running=false; state.timers.shot.lastTick=0; saveState(); });
+      $('shotReset').addEventListener('click', ()=>{ state.timers.shot.running=false; state.timers.shot.lastTick=0; state.timers.shot.remainingMs=24*1000; updateShotClock(); saveState(); });
+      $('shotTo14').addEventListener('click', ()=>{ state.timers.shot.remainingMs=14*1000; updateShotClock(); saveState(); });
+
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(tick);
+
+      updateMatchClock(); updateShotClock();
+    }
+
+    // --- Load match data from brackets ---
+    function loadMatchFromBrackets() {
+      try {
+        const matchData = localStorage.getItem('currentMatch');
+        if (!matchData) return false;
+
+        const match = JSON.parse(matchData);
+        
+        // Reset scoring state so previous match values do not carry over
+        try {
+          if (state && state.periods && state.scores) {
+            state.periods.forEach(pid => {
+              if (!state.scores[pid]) state.scores[pid] = { A: 0, B: 0 };
+              else { state.scores[pid].A = 0; state.scores[pid].B = 0; }
+            });
+          }
+          if (state && state.teams && state.teams.A && state.teams.B) {
+            state.teams.A.score = 0; state.teams.B.score = 0;
+            if (Array.isArray(state.teams.A.players)) state.teams.A.players.forEach(p => p.fouls = 0);
+            if (Array.isArray(state.teams.B.players)) state.teams.B.players.forEach(p => p.fouls = 0);
+          }
+        } catch (_) {}
+        
+        // Pre-fill team names from bracket
+        if (match.teamA && match.teamA.name) {
+          state.setup.teamAName = match.teamA.name;
+          $('teamAName').value = match.teamA.name;
+        }
+        if (match.teamB && match.teamB.name) {
+          state.setup.teamBName = match.teamB.name;
+          $('teamBName').value = match.teamB.name;
+        }
+
+        // Set competition name
+        state.setup.competition = `Bracket Match - ${match.sport || 'Basketball'}`;
+        $('competition').value = state.setup.competition;
+
+        // Auto-set current date/time
+        const now = new Date();
+        const dateTimeStr = now.toISOString().slice(0, 16);
+        state.setup.dateTime = dateTimeStr;
+        $('dateTime').value = dateTimeStr;
+
+        renderAll();
+        saveState();
+        
+        // Show notification
+        const msg = `Loaded match: ${match.teamA.name} vs ${match.teamB.name}`;
+        console.log(msg);
+        
+        // Clear the match data after loading
+        localStorage.removeItem('currentMatch');
+        
+        return true;
+      } catch (error) {
+        console.error('Error loading match data:', error);
+        return false;
+      }
+    }
+
+    // --- Init ---
+    function init(){
+      ensurePeriodStructures();
+      
+      // Try to load match data from brackets first
+      const loadedFromBracket = loadMatchFromBrackets();
+      
+      renderAll();
+      wireSetupInputs();
+      wireScoreButtons();
+      wireRosterButtons();
+      wireTopBar();
+      wireTimers();
+      wireRegistryLoaders();
+
+      // Default a few empty player rows (up to 5 each) if none
+      if (state.teams.A.players.length===0){ for (let i=0;i<5;i++) state.teams.A.players.push({number:'', name:'', fouls:0}); }
+      if (state.teams.B.players.length===0){ for (let i=0;i<5;i++) state.teams.B.players.push({number:'', name:'', fouls:0}); }
+      renderPlayerTables();
+
+      // Persist theme in class
+      renderTheme();
+      
+      // Show welcome message if loaded from bracket
+      if (loadedFromBracket) {
+        setTimeout(() => {
+          const banner = document.createElement('div');
+          banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#2ea043;color:white;padding:16px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:10000;font-weight:600;';
+          banner.textContent = `✓ Match loaded: ${state.setup.teamAName} vs ${state.setup.teamBName}`;
+          document.body.appendChild(banner);
+          setTimeout(() => banner.remove(), 3000);
+        }, 500);
+      }
+    }
+
+    window.addEventListener('beforeunload', saveState);
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+  
+  <!-- Firebase SDK for syncing -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <!-- Sync to Bracket Feature -->
+  <script src="basketball_sync.js"></script>
+</body>
+</html>

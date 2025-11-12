@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>School & Player Registration</title>
+  <style>
+    :root {
+      --bg: #0b0c10; --panel: #121419; --text: #e6e6e6; --muted: #a7a7a7; --accent: #3b82f6; --accent-2:#22c55e; --danger:#ef4444; --border:#1f2430; --button:#1b1f2a; --button-hover:#242b3a; --input-bg:#111319; --input-border:#2a2f3d;
+    }
+    body.light { --bg:#f7f8fa; --panel:#fff; --text:#0b0c10; --muted:#475569; --accent:#1d4ed8; --accent-2:#16a34a; --danger:#b91c1c; --border:#e5e7eb; --button:#f3f4f6; --button-hover:#e5e7eb; --input-bg:#fff; --input-border:#d1d5db; }
+    html, body { height: 100%; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; }
+    .title { font-weight:800; }
+    .btn { cursor:pointer; background:var(--button); color:var(--text); border:1px solid var(--input-border); padding:10px 12px; border-radius:10px; font-weight:600; }
+    .btn:hover { background:var(--button-hover); }
+    .btn.accent { background: var(--accent); color:#fff; border-color: var(--accent); }
+    .btn.danger { border-color: var(--danger); color: var(--danger); background: transparent; }
+    .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px; }
+    .row { display:flex; flex-wrap:wrap; gap:12px; }
+    .col { flex:1 1 0; min-width:280px; }
+    .label { font-size:12px; color:var(--muted); margin-bottom:4px; }
+    .input { width:100%; padding:10px 12px; border-radius:10px; background:var(--input-bg); color:var(--text); border:1px solid var(--input-border); }
+    .stack-sm { display:grid; gap:6px; }
+    .stack-md { display:grid; gap:10px; }
+    ul.list { list-style:none; padding:0; margin:0; }
+    ul.list li { display:flex; justify-content:space-between; align-items:center; padding:8px; border:1px solid var(--border); border-radius:10px; margin-bottom:6px; background:var(--button); }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:8px; border-bottom:1px solid var(--border); font-size:14px; }
+    th { text-align:left; color:var(--muted); }
+    .chip { padding:6px 8px; background:var(--button); border:1px solid var(--input-border); border-radius:8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <div class="title">School & Player Registration</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn" id="toggleTheme">Toggle Theme</button>
+        <a class="btn accent" href="basketball_scoresheet.html">Open Score Sheet</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Schools -->
+      <div class="col">
+        <div class="panel">
+          <h3>Schools</h3>
+          <div class="stack-sm">
+            <div class="stack-sm">
+              <div class="label">Add new school</div>
+              <div style="display:flex; gap:6px;">
+                <input class="input" id="newSchoolName" placeholder="e.g., Springfield High" />
+                <button class="btn" id="addSchoolBtn">Add</button>
+              </div>
+            </div>
+            <div class="stack-sm" style="margin-top:6px;">
+              <div class="label">Existing schools</div>
+              <ul class="list" id="schoolsList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="col">
+        <div class="panel">
+          <h3>Categories <span id="catForSchool" class="chip"></span></h3>
+          <div class="stack-sm">
+            <div class="stack-sm">
+              <div class="label">Add new category for selected school</div>
+              <div style="display:flex; gap:6px;">
+                <input class="input" id="newCategoryName" placeholder="e.g., Varsity Boys, U16 Girls" />
+                <button class="btn" id="addCategoryBtn">Add</button>
+              </div>
+            </div>
+            <div class="stack-sm" style="margin-top:6px;">
+              <div class="label">Existing categories</div>
+              <ul class="list" id="categoriesList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roster -->
+      <div class="col" style="flex-basis: 100%;"></div>
+      <div class="col" style="min-width: 560px; flex: 1 1 560px;">
+        <div class="panel">
+          <h3>Roster <span id="rosterContext" class="chip"></span></h3>
+          <div class="stack-sm">
+            <div class="row">
+              <div class="col">
+                <div class="stack-sm">
+                  <div class="label">Coach</div>
+                  <input class="input" id="coachInput" />
+                </div>
+              </div>
+              <div class="col">
+                <div class="stack-sm">
+                  <div class="label">Assistant Coach</div>
+                  <input class="input" id="asstCoachInput" />
+                </div>
+              </div>
+            </div>
+            <div style="overflow:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:72px;">#</th>
+                    <th>Name</th>
+                    <th style="width:90px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="playersTableBody"></tbody>
+              </table>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn" id="addPlayerBtn">Add Player</button>
+              <span class="label">Max 15 players</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const REG_KEY = 'school_registry_v1';
+    const MAX_PLAYERS = 15;
+
+    function loadReg(){ try { const r = JSON.parse(localStorage.getItem(REG_KEY) || '{}'); return { schools: r.schools || {} }; } catch { return { schools: {} }; } }
+    function saveReg(reg){ try { localStorage.setItem(REG_KEY, JSON.stringify(reg)); } catch {}
+      flashSave(); }
+
+    let reg = loadReg();
+
+    // current selection
+    let currentSchool = null;
+    let currentCategory = null;
+
+    function $(id){ return document.getElementById(id); }
+    function el(tag, attrs={}, children=[]) { const e = document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class') e.className=v; else if(k==='text') e.textContent=v; else if(k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k,v); }); children.forEach(c=>e.appendChild(typeof c==='string'?document.createTextNode(c):c)); return e; }
+
+    let flashTo=null; function flashSave(){ const btn=$('addPlayerBtn'); if(!btn) return; const old=btn.textContent; btn.textContent='Saved'; clearTimeout(flashTo); flashTo=setTimeout(()=>btn.textContent=old,800); }
+
+    function listSchools(){ return Object.keys(reg.schools).sort(); }
+    function listCategories(school){ return Object.keys((reg.schools[school]||{}).categories||{}).sort(); }
+
+    function ensureSchool(name){ if(!reg.schools[name]) reg.schools[name] = { categories: {} }; }
+    function ensureCategory(school, category){ ensureSchool(school); if(!reg.schools[school].categories[category]) reg.schools[school].categories[category] = { coach:'', asstCoach:'', players: [] }; }
+
+    function renderSchools(){ const ul=$('schoolsList'); ul.innerHTML=''; listSchools().forEach(name=>{ const li=el('li',{},[ el('span',{text:name}), el('div',{},[ el('button',{class:'btn', onclick:()=>{ currentSchool=name; currentCategory=null; renderAll(); }},[document.createTextNode('Select')]), el('button',{class:'btn danger', onclick:()=>{ if(confirm('Delete school and all categories?')){ delete reg.schools[name]; if(currentSchool===name){currentSchool=null; currentCategory=null;} saveReg(reg); renderAll(); } }},[document.createTextNode('Delete')]) ]) ]); ul.appendChild(li); }); }
+
+    function renderCategories(){ const ul=$('categoriesList'); ul.innerHTML=''; $('catForSchool').textContent = currentSchool?('for '+currentSchool):'(select a school)'; if(!currentSchool){ return; } listCategories(currentSchool).forEach(cat=>{ const li=el('li',{},[ el('span',{text:cat}), el('div',{},[ el('button',{class:'btn', onclick:()=>{ currentCategory=cat; renderAll(); }},[document.createTextNode('Select')]), el('button',{class:'btn danger', onclick:()=>{ if(confirm('Delete this category roster?')){ delete reg.schools[currentSchool].categories[cat]; if(currentCategory===cat) currentCategory=null; saveReg(reg); renderAll(); } }},[document.createTextNode('Delete')]) ]) ]); ul.appendChild(li); }); }
+
+    function renderRoster(){ const ctx=$('rosterContext'); const body=$('playersTableBody'); body.innerHTML=''; $('coachInput').value=''; $('asstCoachInput').value=''; if(!currentSchool || !currentCategory){ ctx.textContent='(select school & category)'; return; }
+      ctx.textContent = currentSchool+' — '+currentCategory; const cat = reg.schools[currentSchool].categories[currentCategory]; $('coachInput').value = cat.coach||''; $('asstCoachInput').value = cat.asstCoach||''; cat.players.forEach((p,idx)=>{ const tr=document.createElement('tr'); const tdN=document.createElement('td'); const tdName=document.createElement('td'); const tdAct=document.createElement('td'); const inNum=el('input',{class:'input', value:p.number||'', placeholder:'#', inputmode:'numeric'}); inNum.addEventListener('input',()=>{ p.number=inNum.value.slice(0,3); saveReg(reg); }); const inName=el('input',{class:'input', value:p.name||'', placeholder:'Player name'}); inName.addEventListener('input',()=>{ p.name=inName.value; saveReg(reg); }); tdN.appendChild(inNum); tdName.appendChild(inName); tdAct.appendChild(el('button',{class:'btn danger', onclick:()=>{ cat.players.splice(idx,1); saveReg(reg); renderRoster(); }},[document.createTextNode('Remove')])); tr.appendChild(tdN); tr.appendChild(tdName); tr.appendChild(tdAct); body.appendChild(tr); }); }
+
+    function wire(){
+      $('toggleTheme').addEventListener('click', ()=>{ document.body.classList.toggle('light'); });
+      $('addSchoolBtn').addEventListener('click', ()=>{ const name=$('newSchoolName').value.trim(); if(!name) return; if(reg.schools[name]){ alert('School already exists'); return; } ensureSchool(name); saveReg(reg); $('newSchoolName').value=''; currentSchool=name; currentCategory=null; renderAll(); });
+      $('addCategoryBtn').addEventListener('click', ()=>{ if(!currentSchool){ alert('Select a school first'); return; } const cat=$('newCategoryName').value.trim(); if(!cat) return; ensureCategory(currentSchool, cat); saveReg(reg); $('newCategoryName').value=''; currentCategory=cat; renderAll(); });
+      $('addPlayerBtn').addEventListener('click', ()=>{ if(!currentSchool||!currentCategory){ alert('Select school & category'); return; } const cat=reg.schools[currentSchool].categories[currentCategory]; if(cat.players.length>=MAX_PLAYERS) return; cat.players.push({number:'', name:''}); saveReg(reg); renderRoster(); });
+      $('coachInput').addEventListener('input', ()=>{ if(!currentSchool||!currentCategory) return; reg.schools[currentSchool].categories[currentCategory].coach=$('coachInput').value; saveReg(reg); });
+      $('asstCoachInput').addEventListener('input', ()=>{ if(!currentSchool||!currentCategory) return; reg.schools[currentSchool].categories[currentCategory].asstCoach=$('asstCoachInput').value; saveReg(reg); });
+    }
+
+    function renderAll(){ renderSchools(); renderCategories(); renderRoster(); }
+
+    document.addEventListener('DOMContentLoaded', ()=>{ renderAll(); wire(); });
+  </script>
+</body>
+</html>

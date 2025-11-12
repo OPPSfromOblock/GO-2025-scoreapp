@@ -1,0 +1,3095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Sport Scoresheet Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --background: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Hidden sections */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { border-left: 4px solid var(--success-color); }
+        .toast.error { border-left: 4px solid var(--danger-color); }
+        .toast.warning { border-left: 4px solid var(--warning-color); }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 48px;
+            min-width: 48px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Auth Page */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-gradient);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-card h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .auth-card p {
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-light);
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .link-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+            padding: 8px;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .welcome-section {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .welcome-section h2 {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-card .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Sport Grid */
+        .sport-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .sport-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+
+        .sport-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        .sport-card .sport-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .sport-card .sport-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .sport-card .sport-count {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Scoring Interface */
+        .scoring-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .scoring-header {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .breadcrumb {
+            color: var(--text-light);
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .scoreboard {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .scoreboard-teams {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 24px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .team {
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .team-score {
+            font-size: 72px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .score-separator {
+            font-size: 48px;
+            color: var(--text-light);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        .participant-list {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+
+        .participant-item {
+            display: grid;
+            grid-template-columns: 50px 1fr auto;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+
+        .participant-rank {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .participant-rank.gold { color: #ffd700; }
+        .participant-rank.silver { color: #c0c0c0; }
+        .participant-rank.bronze { color: #cd7f32; }
+
+        .participant-info h4 {
+            margin-bottom: 4px;
+        }
+
+        .participant-info p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .participant-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .attempt-tracker {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .attempt-row {
+            display: grid;
+            grid-template-columns: 80px repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            align-items: center;
+        }
+
+        .attempt-input {
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .attempt-input.foul {
+            background: #fee;
+            color: var(--danger-color);
+        }
+
+        .attempt-input.best {
+            background: #efe;
+            border-color: var(--success-color);
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            padding: 24px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .event-history {
+            margin-top: 24px;
+        }
+
+        .event-item {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .event-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .event-info h4 {
+            margin-bottom: 4px;
+        }
+
+        .event-info p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 60px;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: calc(100vh - 60px);
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .mobile-menu-item:hover {
+            background: var(--background);
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 998;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+                -webkit-text-size-adjust: 100%;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header-title {
+                font-size: 18px;
+            }
+
+            .header-actions > *:not(.hamburger) {
+                display: none;
+            }
+
+            .dashboard {
+                padding: 16px;
+            }
+
+            .welcome-section {
+                padding: 20px;
+            }
+
+            .welcome-section h2 {
+                font-size: 24px;
+            }
+
+            .sport-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .sport-card {
+                padding: 16px;
+            }
+
+            .sport-card .sport-icon {
+                font-size: 36px;
+            }
+
+            .sport-card .sport-name {
+                font-size: 14px;
+            }
+
+            .scoring-container {
+                padding: 16px;
+            }
+
+            .scoreboard {
+                padding: 20px;
+            }
+
+            .scoreboard-teams {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .score-separator {
+                display: none;
+            }
+
+            .team-score {
+                font-size: 48px;
+            }
+
+            .team-name {
+                font-size: 18px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+                font-size: 16px;
+                padding: 14px 20px;
+                min-height: 52px;
+            }
+
+            .btn.lg {
+                padding: 18px 24px;
+                font-size: 18px;
+                min-height: 60px;
+            }
+
+            /* Timer displays - larger for mobile */
+            #game-timer-display {
+                font-size: 56px !important;
+            }
+
+            /* Modal optimizations */
+            .modal {
+                padding: 10px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                max-height: 85vh;
+            }
+
+            /* Toast notifications */
+            .toast {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            /* Auth page */
+            .auth-card {
+                padding: 24px;
+            }
+
+            .auth-card h1 {
+                font-size: 24px;
+            }
+
+            /* Stat cards */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            /* Form inputs - larger for mobile */
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px;
+                padding: 14px;
+            }
+
+            /* Table optimizations */
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px 6px;
+            }
+
+            /* Participant tracking */
+            .participant-item {
+                grid-template-columns: 40px 1fr auto;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .participant-rank {
+                font-size: 16px;
+            }
+
+            /* Better scrolling on mobile */
+            .participant-list,
+            .event-history {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Hide desktop-only elements */
+            .desktop-only {
+                display: none !important;
+            }
+        }
+
+        /* Extra small phones */
+        @media (max-width: 375px) {
+            .sport-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sport-card .sport-icon {
+                font-size: 32px;
+            }
+
+            .team-score {
+                font-size: 36px;
+            }
+
+            #game-timer-display {
+                font-size: 44px !important;
+            }
+
+            .btn {
+                font-size: 15px;
+                padding: 12px 16px;
+            }
+        }
+
+        /* Landscape orientation optimizations */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .welcome-section {
+                padding: 16px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .sport-card {
+                padding: 12px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn:active {
+                transform: scale(0.98);
+            }
+
+            .sport-card:active {
+                transform: scale(0.98);
+            }
+
+            * {
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .header,
+            .btn,
+            .action-buttons {
+                display: none;
+            }
+
+            .scoreboard,
+            .participant-list {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+        }
+
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-top: 8px;
+            min-width: 200px;
+            overflow: hidden;
+        }
+
+        .profile-menu button {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .profile-menu button:hover {
+            background: var(--background);
+        }
+
+        .sets-display {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .set-box {
+            padding: 8px 16px;
+            background: var(--background);
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .service-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: var(--warning-color);
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Section -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-card">
+            <h1>🏆 SportScore</h1>
+            <p>Multi-Sport Event Management</p>
+            
+            <div id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="login()">Log In</button>
+                    <button class="btn btn-secondary" onclick="googleSignIn()">
+                        Sign in with Google
+                    </button>
+                </div>
+                <div class="divider">or</div>
+                <div style="text-align: center;">
+                    <button class="link-button" onclick="showSignup()">Create new account</button>
+                    <br>
+                    <button class="link-button" onclick="resetPassword()">Forgot password?</button>
+                </div>
+            </div>
+
+            <div id="signup-form" class="hidden">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signup-name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signup-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>Organization (Optional)</label>
+                    <input type="text" id="signup-org" placeholder="School/Club name">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="signup()">Sign Up</button>
+                </div>
+                <div class="divider">or</div>
+                <div style="text-align: center;">
+                    <button class="link-button" onclick="showLogin()">Back to login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="hidden">
+        <div class="header">
+            <div class="header-title">
+                <span>🏆</span>
+                <span>SportScore</span>
+            </div>
+            <div class="header-actions">
+                <div class="profile-dropdown desktop-menu">
+                    <button class="btn btn-secondary" onclick="toggleProfileMenu()">
+                        <span id="user-name-display">Profile</span>
+                    </button>
+                    <div id="profile-menu" class="profile-menu hidden">
+                        <button onclick="showSettings()">⚙️ Settings</button>
+                        <button onclick="logout()">🚪 Logout</button>
+                    </div>
+                </div>
+                <div class="hamburger" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-overlay" class="mobile-overlay" onclick="closeMobileMenu()"></div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu">
+            <div class="mobile-menu-item" onclick="closeMobileMenu()">
+                <span>👤</span>
+                <span id="mobile-user-name">Profile</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSettings(); closeMobileMenu()">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </div>
+            <div class="mobile-menu-item" onclick="logout(); closeMobileMenu()">
+                <span>🚪</span>
+                <span>Logout</span>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="welcome-section">
+                <h2>Welcome, <span id="welcome-name">User</span>!</h2>
+                <p>Select a sport below to start recording a new event</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-total-events">0</span>
+                        <span class="stat-label">Total Events</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-favorite-sport">-</span>
+                        <span class="stat-label">Most Used Sport</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="stat-this-week">0</span>
+                        <span class="stat-label">Events This Week</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Select a Sport</h3>
+            <div class="sport-grid" id="sport-grid"></div>
+
+            <div class="event-history">
+                <h3>Recent Events</h3>
+                <div id="recent-events"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scoring Section -->
+    <div id="scoring-section" class="hidden">
+        <div class="header">
+            <div class="header-title">
+                <button class="btn btn-secondary" onclick="backToDashboard()">← Back</button>
+                <span id="current-sport-name">Sport</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-success" onclick="saveEvent()">💾 Save</button>
+            </div>
+        </div>
+
+        <div class="scoring-container" id="scoring-container"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Configuration - REPLACE WITH YOUR CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRBbTB_IFTgYBxTtwgfqHJn8q7Obtcgcc",
+            authDomain: "gc-score.firebaseapp.com",
+            databaseURL: "https://gc-score-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "gc-score",
+            storageBucket: "gc-score.firebasestorage.app",
+            messagingSenderId: "931498134631",
+            appId: "1:931498134631:web:3ae36315460781c95c58c2",
+            measurementId: "G-86QNEK7MDQ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Global state
+        let currentUser = null;
+        let currentEvent = null;
+        let currentSport = null;
+        let autoSaveInterval = null;
+        let gameTimer = null;
+        let timerInterval = null;
+        let timerStartTime = 0;
+        let timerElapsed = 0;
+        let timerPaused = true;
+
+        // Sports configuration with timer rules
+        const sports = [
+            { id: 'football', name: 'FOOTBALL', icon: '⚽', type: 'team', timer: { halves: 2, duration: 45 * 60 * 1000 } },
+            { id: 'basketball', name: 'BASKETBALL', icon: '🏀', type: 'team', timer: { quarters: 4, duration: 10 * 60 * 1000, shotClock: 24 * 1000 } },
+            { id: 'volleyball', name: 'VOLLEYBALL', icon: '🏐', type: 'team', timer: { sets: 5, noTimeLimit: true } },
+            { id: 'kabaddi', name: 'KABADDI', icon: '🤼', type: 'team', timer: { halves: 2, duration: 20 * 60 * 1000, raidTimer: 30 * 1000 } },
+            { id: 'tug-of-war', name: 'TUG OF WAR', icon: '💪', type: 'team', timer: { bestOf: 3, noTimeLimit: true } },
+            { id: '100m', name: '100M RACE', icon: '🏃', type: 'track', timer: { precision: 'ms' } },
+            { id: '200m', name: '200M RACE', icon: '🏃', type: 'track', timer: { precision: 'ms' } },
+            { id: '400m', name: '400M RACE', icon: '🏃', type: 'track', timer: { precision: 'ms' } },
+            { id: '4x100-relay', name: '4 x 100 RELAY', icon: '🤾', type: 'track', timer: { precision: 'ms' } },
+            { id: 'ball-relay', name: 'BALL RELAY', icon: '🏃', type: 'track', timer: { precision: 'ms' } },
+            { id: 'zigzag-relay', name: 'ZIG-ZAG RELAY', icon: '🏃', type: 'track', timer: { precision: 'ms' } },
+            { id: 'discus', name: 'DISCUS THROW', icon: '🥏', type: 'field', timer: { attempts: 6 } },
+            { id: 'javelin', name: 'JAVELIN THROW', icon: '🎯', type: 'field', timer: { attempts: 6 } },
+            { id: 'shot-put', name: 'SHOT PUT', icon: '⚾', type: 'field', timer: { attempts: 6 } },
+            { id: 'high-jump', name: 'HIGH JUMP', icon: '🏅', type: 'field', timer: { attempts: 3 } },
+            { id: 'long-jump', name: 'LONG JUMP', icon: '🏅', type: 'field', timer: { attempts: 6 } },
+            { id: 'badminton-single', name: 'BADMINTON (Single)', icon: '🏸', type: 'racket', timer: { matchTracking: true } },
+            { id: 'badminton-double', name: 'BADMINTON (Double)', icon: '🏸', type: 'racket', timer: { matchTracking: true } },
+            { id: 'table-tennis-single', name: 'TABLE TENNIS (Single)', icon: '🏓', type: 'racket', timer: { matchTracking: true } },
+            { id: 'table-tennis-double', name: 'TABLE TENNIS (Double)', icon: '🏓', type: 'racket', timer: { matchTracking: true } },
+            { id: 'carrom-single', name: 'CARROM (Single)', icon: '🎯', type: 'board', timer: { matchTracking: true } },
+            { id: 'carrom-double', name: 'CARROM (Double)', icon: '🎯', type: 'board', timer: { matchTracking: true } },
+            { id: 'chess', name: 'CHESS', icon: '♟️', type: 'board', timer: { playerClock: true } },
+            { id: 'taekwondo', name: 'TAEKWONDO', icon: '🥋', type: 'combat', timer: { rounds: 3, duration: 2 * 60 * 1000, rest: 1 * 60 * 1000 } },
+            { id: 'skating', name: 'SKATING', icon: '⛸️', type: 'other', timer: { precision: 'ms' } }
+        ];
+
+        // Auth state observer
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+                showDashboard();
+            } else {
+                currentUser = null;
+                showAuth();
+            }
+        });
+
+        // Auth functions
+        function showLogin() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('signup-form').classList.add('hidden');
+        }
+
+        function showSignup() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                showToast('Please enter email and password', 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast('Login successful!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function signup() {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const org = document.getElementById('signup-org').value;
+
+            if (!name || !email || !password) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            showLoading();
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('users').doc(result.user.uid).set({
+                    name: name,
+                    email: email,
+                    organization: org || '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Account created successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function googleSignIn() {
+            showLoading();
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                
+                // Create user profile if it doesn't exist
+                const userDoc = await db.collection('users').doc(result.user.uid).get();
+                if (!userDoc.exists) {
+                    await db.collection('users').doc(result.user.uid).set({
+                        name: result.user.displayName,
+                        email: result.user.email,
+                        organization: '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                showToast('Login successful!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function resetPassword() {
+            const email = document.getElementById('login-email').value;
+            if (!email) {
+                showToast('Please enter your email address', 'error');
+                return;
+            }
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showToast('Password reset email sent!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        // UI Navigation
+        function showAuth() {
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('scoring-section').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('scoring-section').classList.add('hidden');
+            loadDashboard();
+        }
+
+        let lastRecordedTime = null;
+        
+        function recordCurrentTime() {
+            if (timerPaused) {
+                lastRecordedTime = timerElapsed;
+                showToast(`Time recorded: ${formatTime(timerElapsed, 'ms')}`, 'success');
+            } else {
+                showToast('Please stop the timer first', 'warning');
+            }
+        }
+
+        function backToDashboard() {
+            if (currentEvent && currentEvent.status === 'ongoing') {
+                if (confirm('You have unsaved changes. Do you want to save before leaving?')) {
+                    saveEvent();
+                }
+            }
+            stopAutoSave();
+            stopTimer();
+            stopRaidTimer();
+            showDashboard();
+        }
+
+        function toggleProfileMenu() {
+            document.getElementById('profile-menu').classList.toggle('hidden');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-overlay');
+            const hamburger = document.querySelector('.hamburger');
+            
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            hamburger.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (menu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const overlay = document.getElementById('mobile-overlay');
+            const hamburger = document.querySelector('.hamburger');
+            
+            menu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Dashboard functions
+        async function loadUserData() {
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    document.getElementById('welcome-name').textContent = userData.name;
+                    document.getElementById('user-name-display').textContent = userData.name.split(' ')[0];
+                    document.getElementById('mobile-user-name').textContent = userData.name;
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        async function loadDashboard() {
+            // Load sport grid
+            const sportGrid = document.getElementById('sport-grid');
+            sportGrid.innerHTML = '';
+            
+            // Get event counts
+            const eventCounts = {};
+            try {
+                const eventsSnapshot = await db.collection('events')
+                    .where('userId', '==', currentUser.uid)
+                    .get();
+                
+                eventsSnapshot.forEach(doc => {
+                    const sport = doc.data().sport;
+                    eventCounts[sport] = (eventCounts[sport] || 0) + 1;
+                });
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+
+            sports.forEach(sport => {
+                const count = eventCounts[sport.id] || 0;
+                const card = document.createElement('div');
+                card.className = 'sport-card';
+                card.onclick = () => startSport(sport);
+                card.innerHTML = `
+                    <div class="sport-icon">${sport.icon}</div>
+                    <div class="sport-name">${sport.name}</div>
+                    <div class="sport-count">${count} events</div>
+                `;
+                sportGrid.appendChild(card);
+            });
+
+            // Load statistics
+            await loadStatistics();
+            await loadRecentEvents();
+        }
+
+        async function loadStatistics() {
+            try {
+                const eventsSnapshot = await db.collection('events')
+                    .where('userId', '==', currentUser.uid)
+                    .get();
+
+                const totalEvents = eventsSnapshot.size;
+                document.getElementById('stat-total-events').textContent = totalEvents;
+
+                // Count events by sport
+                const sportCounts = {};
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                let thisWeekCount = 0;
+
+                eventsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    sportCounts[data.sport] = (sportCounts[data.sport] || 0) + 1;
+                    
+                    if (data.date && data.date.toDate() >= weekAgo) {
+                        thisWeekCount++;
+                    }
+                });
+
+                // Find favorite sport
+                let favoriteSport = '-';
+                let maxCount = 0;
+                for (const [sport, count] of Object.entries(sportCounts)) {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        const sportObj = sports.find(s => s.id === sport);
+                        favoriteSport = sportObj ? sportObj.name : sport;
+                    }
+                }
+
+                document.getElementById('stat-favorite-sport').textContent = favoriteSport;
+                document.getElementById('stat-this-week').textContent = thisWeekCount;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        async function loadRecentEvents() {
+            try {
+                const eventsSnapshot = await db.collection('events')
+                    .where('userId', '==', currentUser.uid)
+                    .orderBy('createdAt', 'desc')
+                    .limit(5)
+                    .get();
+
+                const container = document.getElementById('recent-events');
+                container.innerHTML = '';
+
+                if (eventsSnapshot.empty) {
+                    container.innerHTML = '<p style="text-align:center;color:var(--text-light);">No events yet. Start by selecting a sport above!</p>';
+                    return;
+                }
+
+                eventsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const sport = sports.find(s => s.id === data.sport);
+                    const item = document.createElement('div');
+                    item.className = 'event-item';
+                    item.innerHTML = `
+                        <div class="event-info">
+                            <h4>${sport ? sport.icon : ''} ${data.eventName}</h4>
+                            <p>${sport ? sport.name : data.sport} • ${data.venue || 'No venue'} • ${data.date ? new Date(data.date.toDate()).toLocaleDateString() : 'No date'}</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="viewEvent('${doc.id}')">View</button>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading recent events:', error);
+            }
+        }
+
+        // Timer Utility Functions
+        function formatTime(ms, precision = 'ms') {
+            if (precision === 'ms') {
+                const totalMs = Math.abs(ms);
+                const minutes = Math.floor(totalMs / 60000);
+                const seconds = Math.floor((totalMs % 60000) / 1000);
+                const milliseconds = Math.floor((totalMs % 1000) / 10);
+                return `${minutes}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(2, '0')}`;
+            } else {
+                const totalSec = Math.floor(Math.abs(ms) / 1000);
+                const minutes = Math.floor(totalSec / 60);
+                const seconds = totalSec % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+
+        function startTimer(duration = null, countdown = true) {
+            stopTimer();
+            timerStartTime = performance.now();
+            timerElapsed = 0;
+            timerPaused = false;
+            
+            if (countdown && duration) {
+                gameTimer = { duration, countdown: true, remaining: duration };
+            } else {
+                gameTimer = { duration: null, countdown: false };
+            }
+            
+            timerInterval = setInterval(() => {
+                if (!timerPaused) {
+                    const now = performance.now();
+                    const delta = now - timerStartTime;
+                    timerStartTime = now;
+                    timerElapsed += delta;
+                    
+                    if (countdown && gameTimer.remaining !== null) {
+                        gameTimer.remaining = Math.max(0, duration - timerElapsed);
+                        if (gameTimer.remaining === 0) {
+                            pauseTimer();
+                            showToast('Time\'s up!', 'warning');
+                        }
+                    }
+                    
+                    updateTimerDisplay();
+                }
+            }, 10);
+        }
+
+        function pauseTimer() {
+            timerPaused = true;
+        }
+
+        function resumeTimer() {
+            if (timerPaused) {
+                timerStartTime = performance.now();
+                timerPaused = false;
+            }
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timerPaused = true;
+            timerElapsed = 0;
+            gameTimer = null;
+        }
+
+        function resetTimer() {
+            timerElapsed = 0;
+            timerStartTime = performance.now();
+            if (gameTimer && gameTimer.countdown) {
+                gameTimer.remaining = gameTimer.duration;
+            }
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('game-timer-display');
+            if (!display) return;
+            
+            if (gameTimer && gameTimer.countdown) {
+                display.textContent = formatTime(gameTimer.remaining, 's');
+                if (gameTimer.remaining < 60000 && gameTimer.remaining > 0) {
+                    display.style.color = 'var(--warning-color)';
+                } else if (gameTimer.remaining === 0) {
+                    display.style.color = 'var(--danger-color)';
+                } else {
+                    display.style.color = 'var(--text-dark)';
+                }
+            } else {
+                // Stopwatch mode - use ms precision if it's a track event
+                const precision = (currentSport && currentSport.type === 'track') ? 'ms' : 's';
+                display.textContent = formatTime(timerElapsed, precision);
+            }
+        }
+
+        // Sport scoring functions
+        function startSport(sport) {
+            currentSport = sport;
+            currentEvent = {
+                userId: currentUser.uid,
+                sport: sport.id,
+                status: 'ongoing',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            document.getElementById('current-sport-name').textContent = sport.name;
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('scoring-section').classList.remove('hidden');
+
+            renderScoringInterface(sport);
+            startAutoSave();
+        }
+
+        function renderScoringInterface(sport) {
+            const container = document.getElementById('scoring-container');
+            
+            if (sport.type === 'team') {
+                container.innerHTML = renderTeamSportSetup(sport);
+            } else if (sport.type === 'track') {
+                container.innerHTML = renderTrackEventSetup(sport);
+            } else if (sport.type === 'field') {
+                container.innerHTML = renderFieldEventSetup(sport);
+            } else if (sport.type === 'racket') {
+                container.innerHTML = renderRacketSportSetup(sport);
+            } else if (sport.type === 'board') {
+                container.innerHTML = renderBoardGameSetup(sport);
+            } else if (sport.type === 'combat') {
+                container.innerHTML = renderCombatSportSetup(sport);
+            } else {
+                container.innerHTML = renderOtherSportSetup(sport);
+            }
+        }
+
+        function renderTeamSportSetup(sport) {
+            if (!currentEvent.eventName) {
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup ${sport.name} Event</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., Inter-House Championship">
+                        </div>
+                        <div class="form-group">
+                            <label>Team A Name</label>
+                            <input type="text" id="team-a-name" placeholder="Team A">
+                        </div>
+                        <div class="form-group">
+                            <label>Team B Name</label>
+                            <input type="text" id="team-b-name" placeholder="Team B">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="event-venue" placeholder="Stadium name">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startTeamMatch()">Start Match</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderTeamMatchScoring(sport);
+        }
+
+        function startTeamMatch() {
+            const eventName = document.getElementById('event-name').value;
+            const teamA = document.getElementById('team-a-name').value;
+            const teamB = document.getElementById('team-b-name').value;
+            const date = document.getElementById('event-date').value;
+            const venue = document.getElementById('event-venue').value;
+
+            if (!eventName || !teamA || !teamB) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.teamA = { name: teamA, score: 0 };
+            currentEvent.teamB = { name: teamB, score: 0 };
+            currentEvent.date = new Date(date);
+            currentEvent.venue = venue;
+            currentEvent.events = [];
+            currentEvent.currentPeriod = 1;
+            currentEvent.periodScores = {};
+            
+            // Initialize timer based on sport
+            if (currentSport.timer) {
+                currentEvent.timerConfig = currentSport.timer;
+                if (currentSport.id === 'kabaddi') {
+                    currentEvent.raidTimer = { active: false, remaining: 30000 };
+                }
+            }
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderTeamMatchScoring(sport) {
+            const timerConfig = sport.timer || {};
+            const showTimer = timerConfig.duration || timerConfig.halves || timerConfig.quarters;
+            const periodName = sport.id === 'football' ? 'Half' : sport.id === 'basketball' ? 'Quarter' : sport.id === 'kabaddi' ? 'Half' : 'Period';
+            const totalPeriods = timerConfig.halves || timerConfig.quarters || 2;
+            
+            return `
+                <div class="scoreboard">
+                    <h2 style="text-align:center;margin-bottom:16px;">${currentEvent.eventName}</h2>
+                    ${showTimer ? `
+                        <div style="background:var(--card-bg);padding:20px;border-radius:12px;margin-bottom:20px;border:2px solid var(--primary-color);">
+                            <div style="text-align:center;margin-bottom:16px;">
+                                <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">
+                                    ${periodName} ${currentEvent.currentPeriod} of ${totalPeriods}
+                                </div>
+                                <div id="game-timer-display" style="font-size:48px;font-weight:bold;font-family:monospace;">
+                                    ${formatTime(timerConfig.duration, 's')}
+                                </div>
+                            </div>
+                            <div class="action-buttons" style="gap:8px;">
+                                <button class="btn btn-success" onclick="startTimer(${timerConfig.duration}, true)">▶ Start</button>
+                                <button class="btn btn-warning" onclick="pauseTimer()">⏸ Pause</button>
+                                <button class="btn btn-primary" onclick="resumeTimer()">▶ Resume</button>
+                                <button class="btn btn-secondary" onclick="resetTimer()">↻ Reset</button>
+                                ${sport.id === 'football' || sport.id === 'kabaddi' ? `
+                                    <button class="btn btn-primary" onclick="switchPeriod()">Switch ${periodName}</button>
+                                ` : sport.id === 'basketball' ? `
+                                    <button class="btn btn-primary" onclick="switchPeriod()">Next Quarter</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${sport.id === 'kabaddi' && currentEvent.raidTimer ? `
+                        <div style="background:#fff3cd;padding:16px;border-radius:8px;margin-bottom:16px;text-align:center;">
+                            <div style="font-size:14px;margin-bottom:8px;">Raid Timer</div>
+                            <div id="raid-timer-display" style="font-size:32px;font-weight:bold;">
+                                30
+                            </div>
+                            <div style="margin-top:12px;">
+                                <button class="btn btn-warning" onclick="startRaidTimer()">Start Raid (30s)</button>
+                                <button class="btn btn-secondary" onclick="stopRaidTimer()">Stop</button>
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="scoreboard-teams">
+                        <div class="team">
+                            <div class="team-name">${currentEvent.teamA.name}</div>
+                            <div class="team-score" id="score-a">${currentEvent.teamA.score}</div>
+                        </div>
+                        <div class="score-separator">:</div>
+                        <div class="team">
+                            <div class="team-name">${currentEvent.teamB.name}</div>
+                            <div class="team-score" id="score-b">${currentEvent.teamB.score}</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        ${sport.id === 'football' ? `
+                            <button class="btn btn-success" onclick="addScore('A', 'goal')">⚽ Goal Team A</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'goal')">⚽ Goal Team B</button>
+                            <button class="btn btn-warning" onclick="addScore('A', 'yellow')">🟨 Yellow A</button>
+                            <button class="btn btn-warning" onclick="addScore('B', 'yellow')">🟨 Yellow B</button>
+                            <button class="btn btn-danger" onclick="addScore('A', 'red')">🟥 Red A</button>
+                            <button class="btn btn-danger" onclick="addScore('B', 'red')">🟥 Red B</button>
+                        ` : sport.id === 'basketball' ? `
+                            <button class="btn btn-success" onclick="addScore('A', 'ft')">+1 FT A</button>
+                            <button class="btn btn-success" onclick="addScore('A', 'fg')">+2 FG A</button>
+                            <button class="btn btn-success" onclick="addScore('A', 'three')">+3 PT A</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'ft')">+1 FT B</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'fg')">+2 FG B</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'three')">+3 PT B</button>
+                        ` : sport.id === 'volleyball' ? `
+                            <button class="btn btn-success" onclick="addScore('A', 'point')">+1 Team A</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'point')">+1 Team B</button>
+                            <button class="btn btn-primary" onclick="endSet()">End Set</button>
+                        ` : sport.id === 'kabaddi' ? `
+                            <button class="btn btn-success" onclick="addScore('A', 'touch')">+1 Touch A</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'touch')">+1 Touch B</button>
+                            <button class="btn btn-primary" onclick="addScore('A', 'bonus')">+2 Bonus A</button>
+                            <button class="btn btn-primary" onclick="addScore('B', 'bonus')">+2 Bonus B</button>
+                            <button class="btn btn-success" onclick="addScore('A', 'allout')">+2 All Out A</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'allout')">+2 All Out B</button>
+                        ` : `
+                            <button class="btn btn-success" onclick="addScore('A', 'win')">Round Win A</button>
+                            <button class="btn btn-success" onclick="addScore('B', 'win')">Round Win B</button>
+                        `}
+                        <button class="btn btn-warning" onclick="undoLastAction()">↶ Undo</button>
+                        <button class="btn btn-danger" onclick="finishMatch()">Finish Match</button>
+                    </div>
+                </div>
+                <div class="participant-list">
+                    <h3>Match Events</h3>
+                    <div id="match-events"></div>
+                </div>
+            `;
+        }
+
+        function switchPeriod() {
+            pauseTimer();
+            currentEvent.periodScores[currentEvent.currentPeriod] = {
+                A: currentEvent.teamA.score,
+                B: currentEvent.teamB.score
+            };
+            currentEvent.currentPeriod++;
+            resetTimer();
+            showToast(`Starting Period ${currentEvent.currentPeriod}`, 'success');
+            renderScoringInterface(currentSport);
+        }
+
+        let raidTimerInterval = null;
+        function startRaidTimer() {
+            if (raidTimerInterval) clearInterval(raidTimerInterval);
+            
+            let remaining = 30;
+            const display = document.getElementById('raid-timer-display');
+            
+            raidTimerInterval = setInterval(() => {
+                remaining--;
+                if (display) display.textContent = remaining;
+                
+                if (remaining <= 0) {
+                    clearInterval(raidTimerInterval);
+                    showToast('Raid time up!', 'warning');
+                    if (display) display.textContent = '30';
+                }
+            }, 1000);
+        }
+
+        function stopRaidTimer() {
+            if (raidTimerInterval) {
+                clearInterval(raidTimerInterval);
+                raidTimerInterval = null;
+            }
+            const display = document.getElementById('raid-timer-display');
+            if (display) display.textContent = '30';
+        }
+
+        function endSet() {
+            if (!currentEvent.sets) currentEvent.sets = [];
+            currentEvent.sets.push({
+                A: currentEvent.teamA.score,
+                B: currentEvent.teamB.score
+            });
+            
+            if (currentEvent.teamA.score > currentEvent.teamB.score) {
+                currentEvent.teamA.setsWon = (currentEvent.teamA.setsWon || 0) + 1;
+            } else {
+                currentEvent.teamB.setsWon = (currentEvent.teamB.setsWon || 0) + 1;
+            }
+            
+            currentEvent.teamA.score = 0;
+            currentEvent.teamB.score = 0;
+            
+            showToast(`Set ${currentEvent.sets.length} completed!`, 'success');
+            renderScoringInterface(currentSport);
+        }
+
+        function addScore(team, type) {
+            const points = type === 'goal' ? 1 : 
+                          type === 'ft' ? 1 : 
+                          type === 'fg' ? 2 : 
+                          type === 'three' ? 3 : 
+                          type === 'point' ? 1 : 
+                          type === 'touch' ? 1 : 
+                          type === 'bonus' ? 2 : 
+                          type === 'allout' ? 2 : 
+                          type === 'win' ? 1 : 0;
+            
+            if (team === 'A') {
+                currentEvent.teamA.score += points;
+            } else {
+                currentEvent.teamB.score += points;
+            }
+
+            currentEvent.events = currentEvent.events || [];
+            currentEvent.events.push({
+                team: team,
+                type: type,
+                points: points,
+                time: new Date()
+            });
+
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-a').textContent = currentEvent.teamA.score;
+            document.getElementById('score-b').textContent = currentEvent.teamB.score;
+            
+            const eventsContainer = document.getElementById('match-events');
+            if (eventsContainer) {
+                eventsContainer.innerHTML = currentEvent.events.map((e, i) => `
+                    <div class="participant-item">
+                        <div>${i + 1}</div>
+                        <div>
+                            <h4>${e.team === 'A' ? currentEvent.teamA.name : currentEvent.teamB.name}</h4>
+                            <p>${e.type} (+${e.points})</p>
+                        </div>
+                        <div style="font-size:14px;color:var(--text-light)">
+                            ${new Date(e.time).toLocaleTimeString()}
+                        </div>
+                    </div>
+                `).reverse().join('');
+            }
+        }
+
+        function undoLastAction() {
+            if (!currentEvent.events || currentEvent.events.length === 0) {
+                showToast('No actions to undo', 'warning');
+                return;
+            }
+
+            const lastEvent = currentEvent.events.pop();
+            if (lastEvent.team === 'A') {
+                currentEvent.teamA.score -= lastEvent.points;
+            } else {
+                currentEvent.teamB.score -= lastEvent.points;
+            }
+
+            updateScoreDisplay();
+            showToast('Last action undone', 'success');
+        }
+
+        function finishMatch() {
+            if (confirm('Are you sure you want to finish this match?')) {
+                currentEvent.status = 'completed';
+                currentEvent.winner = currentEvent.teamA.score > currentEvent.teamB.score ? currentEvent.teamA.name : 
+                                     currentEvent.teamB.score > currentEvent.teamA.score ? currentEvent.teamB.name : 'Draw';
+                saveEvent();
+            }
+        }
+
+        function renderTrackEventSetup(sport) {
+            if (!currentEvent.eventName) {
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup ${sport.name}</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., Inter-School 100M Race">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="event-venue" placeholder="Stadium name">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startTrackEvent()">Continue</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderTrackEventScoring(sport);
+        }
+
+        function startTrackEvent() {
+            const eventName = document.getElementById('event-name').value;
+            const date = document.getElementById('event-date').value;
+            const venue = document.getElementById('event-venue').value;
+
+            if (!eventName) {
+                showToast('Please enter event name', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.date = new Date(date);
+            currentEvent.venue = venue;
+            currentEvent.participants = [];
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderTrackEventScoring(sport) {
+            const isRelay = sport.id.includes('relay');
+            return `
+                <div class="scoreboard">
+                    <h2 style="margin-bottom:16px;">${currentEvent.eventName}</h2>
+                    <div style="background:var(--card-bg);padding:20px;border-radius:12px;margin-bottom:20px;border:2px solid var(--success-color);text-align:center;">
+                        <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">
+                            Race Timer (Stopwatch)
+                        </div>
+                        <div id="game-timer-display" style="font-size:56px;font-weight:bold;font-family:monospace;color:var(--success-color);">
+                            0:00.00
+                        </div>
+                        <div class="action-buttons" style="gap:8px;margin-top:16px;">
+                            <button class="btn btn-success" onclick="startTimer(null, false)">▶ Start</button>
+                            <button class="btn btn-warning" onclick="pauseTimer()">⏸ Stop</button>
+                            <button class="btn btn-secondary" onclick="resetTimer()">↻ Reset</button>
+                            <button class="btn btn-primary" onclick="recordCurrentTime()">Record Time</button>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="showAddParticipantModal('${isRelay}')">
+                            + Add ${isRelay ? 'Team' : 'Athlete'}
+                        </button>
+                    </div>
+                </div>
+                <div class="participant-list">
+                    <h3>Participants & Times</h3>
+                    <div id="participants-container">
+                        ${renderTrackParticipants()}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAddParticipantModal(isRelay) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Add ${isRelay === 'true' ? 'Team' : 'Athlete'}</h2>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+                    </div>
+                    ${isRelay === 'true' ? `
+                        <div class="form-group">
+                            <label>Team Name</label>
+                            <input type="text" id="participant-name" placeholder="Team name">
+                        </div>
+                        <div class="form-group">
+                            <label>Runner 1</label>
+                            <input type="text" id="runner-1" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Runner 2</label>
+                            <input type="text" id="runner-2" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Runner 3</label>
+                            <input type="text" id="runner-3" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Runner 4</label>
+                            <input type="text" id="runner-4" placeholder="Name">
+                        </div>
+                    ` : `
+                        <div class="form-group">
+                            <label>Athlete Name</label>
+                            <input type="text" id="participant-name" placeholder="Full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Bib Number</label>
+                            <input type="text" id="bib-number" placeholder="123">
+                        </div>
+                        <div class="form-group">
+                            <label>Team/School</label>
+                            <input type="text" id="participant-team" placeholder="School name">
+                        </div>
+                    `}
+                    <div class="form-group">
+                        <label>Lane</label>
+                        <input type="number" id="lane-number" placeholder="1" min="1" max="8">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addTrackParticipant('${isRelay}')">Add</button>
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function addTrackParticipant(isRelay) {
+            const name = document.getElementById('participant-name').value;
+            const lane = document.getElementById('lane-number').value;
+
+            if (!name || !lane) {
+                showToast('Please fill required fields', 'error');
+                return;
+            }
+
+            const participant = {
+                name: name,
+                lane: parseInt(lane),
+                time: null,
+                status: 'pending'
+            };
+
+            if (isRelay === 'true') {
+                participant.runners = [
+                    document.getElementById('runner-1').value,
+                    document.getElementById('runner-2').value,
+                    document.getElementById('runner-3').value,
+                    document.getElementById('runner-4').value
+                ];
+            } else {
+                participant.bib = document.getElementById('bib-number').value;
+                participant.team = document.getElementById('participant-team').value;
+            }
+
+            currentEvent.participants.push(participant);
+            document.querySelector('.modal').remove();
+            renderScoringInterface(currentSport);
+            showToast('Participant added', 'success');
+        }
+
+        function renderTrackParticipants() {
+            if (!currentEvent.participants || currentEvent.participants.length === 0) {
+                return '<p style="text-align:center;color:var(--text-light);padding:20px;">No participants yet</p>';
+            }
+
+            // Sort by time if available
+            const sorted = [...currentEvent.participants].sort((a, b) => {
+                if (!a.time) return 1;
+                if (!b.time) return -1;
+                return parseFloat(a.time) - parseFloat(b.time);
+            });
+
+            return sorted.map((p, i) => {
+                const rank = p.time ? i + 1 : '-';
+                const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+                
+                return `
+                    <div class="participant-item">
+                        <div class="participant-rank ${rankClass}">${rank}</div>
+                        <div class="participant-info">
+                            <h4>Lane ${p.lane} - ${p.name}</h4>
+                            <p>${p.team || ''} ${p.bib ? '(#' + p.bib + ')' : ''}</p>
+                        </div>
+                        <div>
+                            <input type="number" step="0.01" placeholder="Time (s)" 
+                                   value="${p.time || ''}" 
+                                   onchange="updateParticipantTime(${currentEvent.participants.indexOf(currentEvent.participants.find(x => x.lane === p.lane))}, this.value)"
+                                   style="width:100px;padding:8px;border:2px solid var(--border-color);border-radius:4px;">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateParticipantTime(index, time) {
+            currentEvent.participants[index].time = time;
+            currentEvent.participants[index].status = 'finished';
+            document.getElementById('participants-container').innerHTML = renderTrackParticipants();
+        }
+
+        function renderFieldEventSetup(sport) {
+            if (!currentEvent.eventName) {
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup ${sport.name}</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., State Championship ${sport.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="event-venue" placeholder="Stadium name">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startFieldEvent()">Continue</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderFieldEventScoring(sport);
+        }
+
+        function startFieldEvent() {
+            const eventName = document.getElementById('event-name').value;
+            const date = document.getElementById('event-date').value;
+            const venue = document.getElementById('event-venue').value;
+
+            if (!eventName) {
+                showToast('Please enter event name', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.date = new Date(date);
+            currentEvent.venue = venue;
+            currentEvent.participants = [];
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderFieldEventScoring(sport) {
+            const isJump = sport.id.includes('jump');
+            return `
+                <div class="scoreboard">
+                    <h2>${currentEvent.eventName}</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="showAddFieldParticipantModal()">+ Add Athlete</button>
+                    </div>
+                </div>
+                <div class="participant-list">
+                    <h3>Athletes & Attempts</h3>
+                    <div id="field-participants">
+                        ${renderFieldParticipants(sport)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAddFieldParticipantModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Add Athlete</h2>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Athlete Name</label>
+                        <input type="text" id="athlete-name" placeholder="Full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Bib Number</label>
+                        <input type="text" id="athlete-bib" placeholder="123">
+                    </div>
+                    <div class="form-group">
+                        <label>Team/School</label>
+                        <input type="text" id="athlete-team" placeholder="School name">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addFieldParticipant()">Add</button>
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function addFieldParticipant() {
+            const name = document.getElementById('athlete-name').value;
+            const bib = document.getElementById('athlete-bib').value;
+            const team = document.getElementById('athlete-team').value;
+
+            if (!name) {
+                showToast('Please enter athlete name', 'error');
+                return;
+            }
+
+            currentEvent.participants.push({
+                name: name,
+                bib: bib,
+                team: team,
+                attempts: [null, null, null, null, null, null],
+                best: null
+            });
+
+            document.querySelector('.modal').remove();
+            renderScoringInterface(currentSport);
+            showToast('Athlete added', 'success');
+        }
+
+        function renderFieldParticipants(sport) {
+            if (!currentEvent.participants || currentEvent.participants.length === 0) {
+                return '<p style="text-align:center;color:var(--text-light);padding:20px;">No athletes yet</p>';
+            }
+
+            const sorted = [...currentEvent.participants].sort((a, b) => {
+                const bestA = a.best !== null ? parseFloat(a.best) : -Infinity;
+                const bestB = b.best !== null ? parseFloat(b.best) : -Infinity;
+                return bestB - bestA;
+            });
+
+            return sorted.map((p, i) => {
+                const rank = p.best !== null ? i + 1 : '-';
+                const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+                
+                return `
+                    <div style="background:var(--card-bg);padding:16px;margin-bottom:12px;border-radius:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <div>
+                                <div class="participant-rank ${rankClass}" style="display:inline-block;margin-right:12px;">${rank}</div>
+                                <strong>${p.name}</strong> ${p.bib ? '#' + p.bib : ''} - ${p.team || ''}
+                            </div>
+                            <div class="participant-score">Best: ${p.best || '-'}</div>
+                        </div>
+                        <div class="attempt-row">
+                            <div>Attempts:</div>
+                            ${p.attempts.map((a, j) => `
+                                <input type="number" step="0.01" class="attempt-input ${a !== null && a === p.best ? 'best' : ''}" 
+                                       placeholder="${j + 1}" value="${a || ''}"
+                                       onchange="updateAttempt(${currentEvent.participants.indexOf(currentEvent.participants.find(x => x.name === p.name))}, ${j}, this.value)">
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAttempt(participantIndex, attemptIndex, value) {
+            const participant = currentEvent.participants[participantIndex];
+            participant.attempts[attemptIndex] = value ? parseFloat(value) : null;
+            
+            // Calculate best
+            const validAttempts = participant.attempts.filter(a => a !== null && a > 0);
+            participant.best = validAttempts.length > 0 ? Math.max(...validAttempts) : null;
+            
+            document.getElementById('field-participants').innerHTML = renderFieldParticipants(currentSport);
+        }
+
+        function renderRacketSportSetup(sport) {
+            if (!currentEvent.eventName) {
+                const isDouble = sport.id.includes('double');
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup ${sport.name}</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., Inter-College Championship">
+                        </div>
+                        <div class="form-group">
+                            <label>${isDouble ? 'Team A' : 'Player A'} Name</label>
+                            <input type="text" id="player-a" placeholder="Name">
+                        </div>
+                        ${isDouble ? `
+                            <div class="form-group">
+                                <label>Team A Partner</label>
+                                <input type="text" id="player-a-partner" placeholder="Partner name">
+                            </div>
+                        ` : ''}
+                        <div class="form-group">
+                            <label>${isDouble ? 'Team B' : 'Player B'} Name</label>
+                            <input type="text" id="player-b" placeholder="Name">
+                        </div>
+                        ${isDouble ? `
+                            <div class="form-group">
+                                <label>Team B Partner</label>
+                                <input type="text" id="player-b-partner" placeholder="Partner name">
+                            </div>
+                        ` : ''}
+                        <div class="form-group">
+                            <label>Best of</label>
+                            <select id="best-of">
+                                <option value="3">3 Sets</option>
+                                <option value="5">5 Sets</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="event-venue" placeholder="Court name">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startRacketMatch()">Start Match</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderRacketMatchScoring(sport);
+        }
+
+        function startRacketMatch() {
+            const eventName = document.getElementById('event-name').value;
+            const playerA = document.getElementById('player-a').value;
+            const playerB = document.getElementById('player-b').value;
+            const bestOf = parseInt(document.getElementById('best-of').value);
+            const date = document.getElementById('event-date').value;
+            const venue = document.getElementById('event-venue').value;
+
+            if (!eventName || !playerA || !playerB) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.playerA = { 
+                name: playerA, 
+                partner: document.getElementById('player-a-partner')?.value,
+                score: 0, 
+                sets: 0 
+            };
+            currentEvent.playerB = { 
+                name: playerB,
+                partner: document.getElementById('player-b-partner')?.value,
+                score: 0, 
+                sets: 0 
+            };
+            currentEvent.bestOf = bestOf;
+            currentEvent.currentSet = 1;
+            currentEvent.sets = [];
+            currentEvent.serving = 'A';
+            currentEvent.date = new Date(date);
+            currentEvent.venue = venue;
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderRacketMatchScoring(sport) {
+            const isBadminton = sport.id.includes('badminton');
+            const winScore = isBadminton ? 21 : 11;
+
+            return `
+                <div class="scoreboard">
+                    <h2 style="text-align:center;margin-bottom:24px;">${currentEvent.eventName}</h2>
+                    <div style="text-align:center;margin-bottom:16px;">
+                        <strong>Set ${currentEvent.currentSet}</strong>
+                    </div>
+                    <div class="scoreboard-teams">
+                        <div class="team">
+                            <div class="team-name">
+                                ${currentEvent.playerA.name}
+                                ${currentEvent.serving === 'A' ? '<span class="service-indicator"></span>' : ''}
+                            </div>
+                            <div class="team-score" id="score-a">${currentEvent.playerA.score}</div>
+                            <div style="margin-top:8px;font-size:14px;color:var(--text-light);">
+                                Sets: ${currentEvent.playerA.sets}
+                            </div>
+                        </div>
+                        <div class="score-separator">:</div>
+                        <div class="team">
+                            <div class="team-name">
+                                ${currentEvent.playerB.name}
+                                ${currentEvent.serving === 'B' ? '<span class="service-indicator"></span>' : ''}
+                            </div>
+                            <div class="team-score" id="score-b">${currentEvent.playerB.score}</div>
+                            <div style="margin-top:8px;font-size:14px;color:var(--text-light);">
+                                Sets: ${currentEvent.playerB.sets}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sets-display">
+                        ${currentEvent.sets.map((s, i) => `
+                            <div class="set-box">Set ${i+1}: ${s.scoreA}-${s.scoreB}</div>
+                        `).join('')}
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="addRacketPoint('A', ${winScore})">Point A</button>
+                        <button class="btn btn-success" onclick="addRacketPoint('B', ${winScore})">Point B</button>
+                        <button class="btn btn-warning" onclick="undoRacketPoint()">↶ Undo</button>
+                        <button class="btn btn-danger" onclick="finishRacketMatch()">Finish Match</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addRacketPoint(player, winScore) {
+            if (player === 'A') {
+                currentEvent.playerA.score++;
+            } else {
+                currentEvent.playerB.score++;
+            }
+
+            // Check for set win
+            const scoreA = currentEvent.playerA.score;
+            const scoreB = currentEvent.playerB.score;
+            const diff = Math.abs(scoreA - scoreB);
+
+            if ((scoreA >= winScore || scoreB >= winScore) && diff >= 2) {
+                // Set completed
+                currentEvent.sets.push({ scoreA, scoreB });
+                
+                if (scoreA > scoreB) {
+                    currentEvent.playerA.sets++;
+                } else {
+                    currentEvent.playerB.sets++;
+                }
+
+                // Check for match win
+                const setsToWin = Math.ceil(currentEvent.bestOf / 2);
+                if (currentEvent.playerA.sets >= setsToWin || currentEvent.playerB.sets >= setsToWin) {
+                    currentEvent.status = 'completed';
+                    currentEvent.winner = currentEvent.playerA.sets > currentEvent.playerB.sets ? 
+                                         currentEvent.playerA.name : currentEvent.playerB.name;
+                    showToast('Match completed!', 'success');
+                } else {
+                    // Start new set
+                    currentEvent.currentSet++;
+                    currentEvent.playerA.score = 0;
+                    currentEvent.playerB.score = 0;
+                    showToast(`Set ${currentEvent.currentSet - 1} completed! Starting Set ${currentEvent.currentSet}`, 'success');
+                }
+            }
+
+            renderScoringInterface(currentSport);
+        }
+
+        function undoRacketPoint() {
+            if (currentEvent.playerA.score > 0) {
+                currentEvent.playerA.score--;
+            } else if (currentEvent.playerB.score > 0) {
+                currentEvent.playerB.score--;
+            }
+            renderScoringInterface(currentSport);
+        }
+
+        function finishRacketMatch() {
+            if (confirm('Are you sure you want to finish this match?')) {
+                currentEvent.status = 'completed';
+                saveEvent();
+            }
+        }
+
+        function renderBoardGameSetup(sport) {
+            if (sport.id === 'chess') {
+                return renderChessSetup();
+            }
+            return renderCarromSetup(sport);
+        }
+
+        function renderChessSetup() {
+            if (!currentEvent.eventName) {
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup Chess Match</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., School Championship Round 1">
+                        </div>
+                        <div class="form-group">
+                            <label>White Player</label>
+                            <input type="text" id="player-white" placeholder="Player name">
+                        </div>
+                        <div class="form-group">
+                            <label>Black Player</label>
+                            <input type="text" id="player-black" placeholder="Player name">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="event-venue" placeholder="Location">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startChessMatch()">Start Match</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderChessScoring();
+        }
+
+        function startChessMatch() {
+            const eventName = document.getElementById('event-name').value;
+            const white = document.getElementById('player-white').value;
+            const black = document.getElementById('player-black').value;
+            const date = document.getElementById('event-date').value;
+            const venue = document.getElementById('event-venue').value;
+
+            if (!eventName || !white || !black) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.white = white;
+            currentEvent.black = black;
+            currentEvent.date = new Date(date);
+            currentEvent.venue = venue;
+            currentEvent.startTime = new Date();
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderChessScoring() {
+            return `
+                <div class="scoreboard">
+                    <h2 style="text-align:center;margin-bottom:24px;">${currentEvent.eventName}</h2>
+                    <div class="scoreboard-teams">
+                        <div class="team">
+                            <div class="team-name">⚪ ${currentEvent.white}</div>
+                        </div>
+                        <div class="score-separator">vs</div>
+                        <div class="team">
+                            <div class="team-name">⚫ ${currentEvent.black}</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="endChessGame('white', 'checkmate')">White Wins (Checkmate)</button>
+                        <button class="btn btn-success" onclick="endChessGame('black', 'checkmate')">Black Wins (Checkmate)</button>
+                        <button class="btn btn-warning" onclick="endChessGame('draw', 'stalemate')">Draw (Stalemate)</button>
+                        <button class="btn btn-warning" onclick="endChessGame('draw', 'agreement')">Draw by Agreement</button>
+                        <button class="btn btn-danger" onclick="endChessGame('white', 'resignation')">Black Resigns</button>
+                        <button class="btn btn-danger" onclick="endChessGame('black', 'resignation')">White Resigns</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function endChessGame(winner, reason) {
+            currentEvent.status = 'completed';
+            currentEvent.winner = winner === 'draw' ? 'Draw' : (winner === 'white' ? currentEvent.white : currentEvent.black);
+            currentEvent.result = reason;
+            currentEvent.endTime = new Date();
+            saveEvent();
+        }
+
+        function renderCarromSetup(sport) {
+            if (!currentEvent.eventName) {
+                const isDouble = sport.id.includes('double');
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup ${sport.name}</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., District Carrom Tournament">
+                        </div>
+                        <div class="form-group">
+                            <label>${isDouble ? 'Team A' : 'Player A'}</label>
+                            <input type="text" id="player-a" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>${isDouble ? 'Team B' : 'Player B'}</label>
+                            <input type="text" id="player-b" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Best of</label>
+                            <select id="best-of">
+                                <option value="3">3 Boards</option>
+                                <option value="5">5 Boards</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startCarromMatch()">Start Match</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderCarromScoring();
+        }
+
+        function startCarromMatch() {
+            const eventName = document.getElementById('event-name').value;
+            const playerA = document.getElementById('player-a').value;
+            const playerB = document.getElementById('player-b').value;
+            const bestOf = parseInt(document.getElementById('best-of').value);
+            const date = document.getElementById('event-date').value;
+
+            if (!eventName || !playerA || !playerB) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.playerA = { name: playerA, boards: 0, points: 0 };
+            currentEvent.playerB = { name: playerB, boards: 0, points: 0 };
+            currentEvent.bestOf = bestOf;
+            currentEvent.currentBoard = 1;
+            currentEvent.date = new Date(date);
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderCarromScoring() {
+            return `
+                <div class="scoreboard">
+                    <h2 style="text-align:center;margin-bottom:24px;">${currentEvent.eventName}</h2>
+                    <div style="text-align:center;margin-bottom:16px;">
+                        <strong>Board ${currentEvent.currentBoard}</strong>
+                    </div>
+                    <div class="scoreboard-teams">
+                        <div class="team">
+                            <div class="team-name">${currentEvent.playerA.name}</div>
+                            <div class="team-score">${currentEvent.playerA.boards}</div>
+                            <div style="margin-top:8px;font-size:14px;color:var(--text-light);">
+                                Boards Won
+                            </div>
+                        </div>
+                        <div class="score-separator">:</div>
+                        <div class="team">
+                            <div class="team-name">${currentEvent.playerB.name}</div>
+                            <div class="team-score">${currentEvent.playerB.boards}</div>
+                            <div style="margin-top:8px;font-size:14px;color:var(--text-light);">
+                                Boards Won
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="winCarromBoard('A')">Board Won by A</button>
+                        <button class="btn btn-success" onclick="winCarromBoard('B')">Board Won by B</button>
+                        <button class="btn btn-danger" onclick="finishCarromMatch()">Finish Match</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function winCarromBoard(player) {
+            if (player === 'A') {
+                currentEvent.playerA.boards++;
+            } else {
+                currentEvent.playerB.boards++;
+            }
+
+            const boardsToWin = Math.ceil(currentEvent.bestOf / 2);
+            if (currentEvent.playerA.boards >= boardsToWin || currentEvent.playerB.boards >= boardsToWin) {
+                currentEvent.status = 'completed';
+                currentEvent.winner = currentEvent.playerA.boards > currentEvent.playerB.boards ? 
+                                     currentEvent.playerA.name : currentEvent.playerB.name;
+                showToast('Match completed!', 'success');
+            } else {
+                currentEvent.currentBoard++;
+            }
+
+            renderScoringInterface(currentSport);
+        }
+
+        function finishCarromMatch() {
+            if (confirm('Are you sure you want to finish this match?')) {
+                currentEvent.status = 'completed';
+                saveEvent();
+            }
+        }
+
+        function renderCombatSportSetup(sport) {
+            if (!currentEvent.eventName) {
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup Taekwondo Match</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., State Championship">
+                        </div>
+                        <div class="form-group">
+                            <label>Weight Category</label>
+                            <input type="text" id="weight-category" placeholder="e.g., Under 70kg">
+                        </div>
+                        <div class="form-group">
+                            <label>Fighter A (Red)</label>
+                            <input type="text" id="fighter-a" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Fighter A Team</label>
+                            <input type="text" id="fighter-a-team" placeholder="Club/Team">
+                        </div>
+                        <div class="form-group">
+                            <label>Fighter B (Blue)</label>
+                            <input type="text" id="fighter-b" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Fighter B Team</label>
+                            <input type="text" id="fighter-b-team" placeholder="Club/Team">
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Rounds</label>
+                            <select id="num-rounds">
+                                <option value="2">2 Rounds</option>
+                                <option value="3" selected>3 Rounds</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startTaekwondoMatch()">Start Match</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderTaekwondoScoring();
+        }
+
+        function startTaekwondoMatch() {
+            const eventName = document.getElementById('event-name').value;
+            const category = document.getElementById('weight-category').value;
+            const fighterA = document.getElementById('fighter-a').value;
+            const fighterATeam = document.getElementById('fighter-a-team').value;
+            const fighterB = document.getElementById('fighter-b').value;
+            const fighterBTeam = document.getElementById('fighter-b-team').value;
+            const rounds = parseInt(document.getElementById('num-rounds').value);
+            const date = document.getElementById('event-date').value;
+
+            if (!eventName || !fighterA || !fighterB) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.category = category;
+            currentEvent.fighterA = { name: fighterA, team: fighterATeam, score: 0, penalties: 0 };
+            currentEvent.fighterB = { name: fighterB, team: fighterBTeam, score: 0, penalties: 0 };
+            currentEvent.rounds = rounds;
+            currentEvent.currentRound = 1;
+            currentEvent.date = new Date(date);
+            currentEvent.roundDuration = 2 * 60 * 1000; // 2 minutes per round
+            currentEvent.inRest = false;
+
+            renderScoringInterface(currentSport);
+        }
+
+        function renderTaekwondoScoring() {
+            return `
+                <div class="scoreboard">
+                    <h2 style="text-align:center;margin-bottom:16px;">${currentEvent.eventName}</h2>
+                    <div style="background:var(--card-bg);padding:20px;border-radius:12px;margin-bottom:20px;border:2px solid var(--primary-color);">
+                        <div style="text-align:center;margin-bottom:16px;">
+                            <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">
+                                ${currentEvent.category} - Round ${currentEvent.currentRound} of ${currentEvent.rounds}
+                                ${currentEvent.inRest ? ' (REST PERIOD)' : ''}
+                            </div>
+                            <div id="game-timer-display" style="font-size:48px;font-weight:bold;font-family:monospace;">
+                                02:00
+                            </div>
+                        </div>
+                        <div class="action-buttons" style="gap:8px;">
+                            <button class="btn btn-success" onclick="startTimer(${currentEvent.roundDuration}, true)">▶ Start Round</button>
+                            <button class="btn btn-warning" onclick="pauseTimer()">⏸ Pause</button>
+                            <button class="btn btn-primary" onclick="resumeTimer()">▶ Resume</button>
+                            <button class="btn btn-secondary" onclick="resetTimer()">↻ Reset</button>
+                            <button class="btn btn-primary" onclick="nextTaekwondoRound()">Next Round</button>
+                        </div>
+                    </div>
+                    <div style="text-align:center;margin-bottom:16px;">
+                        <strong>${currentEvent.category}</strong>
+                    </div>
+                    <div class="scoreboard-teams">
+                        <div class="team">
+                            <div class="team-name">🔴 ${currentEvent.fighterA.name}</div>
+                            <div class="team-score">${currentEvent.fighterA.score}</div>
+                            <div style="margin-top:8px;font-size:14px;color:var(--text-light);">
+                                ${currentEvent.fighterA.team}<br>
+                                Penalties: ${currentEvent.fighterA.penalties}
+                            </div>
+                        </div>
+                        <div class="score-separator">:</div>
+                        <div class="team">
+                            <div class="team-name">🔵 ${currentEvent.fighterB.name}</div>
+                            <div class="team-score">${currentEvent.fighterB.score}</div>
+                            <div style="margin-top:8px;font-size:14px;color:var(--text-light);">
+                                ${currentEvent.fighterB.team}<br>
+                                Penalties: ${currentEvent.fighterB.penalties}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="addTaekwondoPoint('A', 1)">+1 Red</button>
+                        <button class="btn btn-success" onclick="addTaekwondoPoint('A', 2)">+2 Red</button>
+                        <button class="btn btn-success" onclick="addTaekwondoPoint('A', 3)">+3 Red</button>
+                        <button class="btn btn-success" onclick="addTaekwondoPoint('B', 1)">+1 Blue</button>
+                        <button class="btn btn-success" onclick="addTaekwondoPoint('B', 2)">+2 Blue</button>
+                        <button class="btn btn-success" onclick="addTaekwondoPoint('B', 3)">+3 Blue</button>
+                        <button class="btn btn-warning" onclick="addPenalty('A')">Penalty Red</button>
+                        <button class="btn btn-warning" onclick="addPenalty('B')">Penalty Blue</button>
+                        <button class="btn btn-danger" onclick="finishTaekwondoMatch()">Finish</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addTaekwondoPoint(fighter, points) {
+            if (fighter === 'A') {
+                currentEvent.fighterA.score += points;
+            } else {
+                currentEvent.fighterB.score += points;
+            }
+            renderScoringInterface(currentSport);
+        }
+
+        function addPenalty(fighter) {
+            if (fighter === 'A') {
+                currentEvent.fighterA.penalties++;
+            } else {
+                currentEvent.fighterB.penalties++;
+            }
+            renderScoringInterface(currentSport);
+        }
+
+        function nextTaekwondoRound() {
+            pauseTimer();
+            if (currentEvent.currentRound < currentEvent.rounds) {
+                currentEvent.currentRound++;
+                currentEvent.inRest = false;
+                resetTimer();
+                showToast(`Starting Round ${currentEvent.currentRound}`, 'success');
+                renderScoringInterface(currentSport);
+            } else {
+                showToast('All rounds completed. Finish the match.', 'warning');
+            }
+        }
+
+        function finishTaekwondoMatch() {
+            if (confirm('Are you sure you want to finish this match?')) {
+                currentEvent.status = 'completed';
+                currentEvent.winner = currentEvent.fighterA.score > currentEvent.fighterB.score ? 
+                                     currentEvent.fighterA.name : 
+                                     currentEvent.fighterB.score > currentEvent.fighterA.score ?
+                                     currentEvent.fighterB.name : 'Draw';
+                saveEvent();
+            }
+        }
+
+        function renderOtherSportSetup(sport) {
+            if (!currentEvent.eventName) {
+                return `
+                    <div class="scoring-header">
+                        <h2>Setup Skating Event</h2>
+                    </div>
+                    <div class="scoreboard">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input type="text" id="event-name" placeholder="e.g., Speed Skating 500M">
+                        </div>
+                        <div class="form-group">
+                            <label>Event Type</label>
+                            <select id="skating-type">
+                                <option value="race">Speed Race</option>
+                                <option value="freestyle">Freestyle/Artistic</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="event-date" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="form-group">
+                            <label>Venue</label>
+                            <input type="text" id="event-venue" placeholder="Rink name">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startSkatingEvent()">Continue</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return renderTrackEventScoring(sport);
+        }
+
+        function startSkatingEvent() {
+            const eventName = document.getElementById('event-name').value;
+            const type = document.getElementById('skating-type').value;
+            const date = document.getElementById('event-date').value;
+            const venue = document.getElementById('event-venue').value;
+
+            if (!eventName) {
+                showToast('Please enter event name', 'error');
+                return;
+            }
+
+            currentEvent.eventName = eventName;
+            currentEvent.skatingType = type;
+            currentEvent.date = new Date(date);
+            currentEvent.venue = venue;
+            currentEvent.participants = [];
+
+            renderScoringInterface(currentSport);
+        }
+
+        // Save and auto-save functions
+        function startAutoSave() {
+            stopAutoSave();
+            autoSaveInterval = setInterval(() => {
+                if (currentEvent && currentEvent.status === 'ongoing') {
+                    saveEventSilently();
+                }
+            }, 30000); // Every 30 seconds
+        }
+
+        function stopAutoSave() {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+                autoSaveInterval = null;
+            }
+        }
+
+        async function saveEventSilently() {
+            try {
+                if (currentEvent.id) {
+                    await db.collection('events').doc(currentEvent.id).update({
+                        ...currentEvent,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            } catch (error) {
+                console.error('Auto-save failed:', error);
+            }
+        }
+
+        async function saveEvent() {
+            if (!currentEvent) return;
+
+            showLoading();
+            try {
+                const eventData = {
+                    ...currentEvent,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (currentEvent.id) {
+                    await db.collection('events').doc(currentEvent.id).update(eventData);
+                    showToast('Event updated successfully!', 'success');
+                } else {
+                    const docRef = await db.collection('events').add(eventData);
+                    currentEvent.id = docRef.id;
+                    showToast('Event saved successfully!', 'success');
+                }
+
+                if (currentEvent.status === 'completed') {
+                    setTimeout(() => {
+                        backToDashboard();
+                    }, 1500);
+                }
+            } catch (error) {
+                showToast('Error saving event: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function viewEvent(eventId) {
+            showLoading();
+            try {
+                const doc = await db.collection('events').doc(eventId).get();
+                if (doc.exists) {
+                    currentEvent = { id: doc.id, ...doc.data() };
+                    currentSport = sports.find(s => s.id === currentEvent.sport);
+                    
+                    document.getElementById('current-sport-name').textContent = currentSport.name;
+                    document.getElementById('dashboard-section').classList.add('hidden');
+                    document.getElementById('scoring-section').classList.remove('hidden');
+                    
+                    renderScoringInterface(currentSport);
+                }
+            } catch (error) {
+                showToast('Error loading event: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showSettings() {
+            alert('Settings feature coming soon!');
+        }
+
+        // Utility functions
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function showLoading() {
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.id = 'loading-overlay';
+            overlay.innerHTML = '<div class="spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-dropdown')) {
+                document.getElementById('profile-menu')?.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
