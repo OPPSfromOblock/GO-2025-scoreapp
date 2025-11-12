@@ -1442,8 +1442,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
+        // Firebase Configuration (supports override without code changes)
+        const defaultFirebaseConfig = {
             apiKey: "AIzaSyBRBbTB_IFTgYBxTtwgfqHJn8q7Obtcgcc",
             authDomain: "gc-score.firebaseapp.com",
             databaseURL: "https://gc-score-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -1453,6 +1453,24 @@
             appId: "1:931498134631:web:3ae36315460781c95c58c2",
             measurementId: "G-86QNEK7MDQ"
         };
+
+        function getOverrideConfig() {
+            try {
+                // URL param ?config=<base64json>
+                const params = new URLSearchParams(window.location.search);
+                const b64 = params.get('config');
+                if (b64) {
+                    const json = atob(b64);
+                    const parsed = JSON.parse(json);
+                    localStorage.setItem('firebaseConfigOverride', JSON.stringify(parsed));
+                    return parsed;
+                }
+                const saved = localStorage.getItem('firebaseConfigOverride');
+                if (saved) return JSON.parse(saved);
+            } catch (e) { console.warn('Config override parse error:', e); }
+            return null;
+        }
+        const firebaseConfig = getOverrideConfig() || defaultFirebaseConfig;
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -2753,12 +2771,16 @@
                     const nextMatchIndex = Math.floor(matchIndex / 2);
                     const nextMatch = currentBracket.rounds[nextRoundIndex].matches[nextMatchIndex];
                     
-                    // Place winner in appropriate slot (teamA or teamB) with score reset to 0
+                    // Place winner in appropriate slot (teamA or teamB) and reset state
                     if (matchIndex % 2 === 0) {
-                        nextMatch.teamA = { ...winner, score: 0 };
+                        nextMatch.teamA = cleanTeamForNext(winner);
                     } else {
-                        nextMatch.teamB = { ...winner, score: 0 };
+                        nextMatch.teamB = cleanTeamForNext(winner);
                     }
+                    nextMatch.teamA.score = nextMatch.teamA.score || 0;
+                    nextMatch.teamB.score = nextMatch.teamB.score || 0;
+                    nextMatch.events = [];
+                    nextMatch.status = 'upcoming';
                 } else {
                     // This is the finals - set champion
                     currentBracket.champion = {
@@ -3397,6 +3419,10 @@
             `;
         }
 
+        function cleanTeamForNext(team) {
+            return { seed: team.seed, name: team.name, emoji: team.emoji, score: 0 };
+        }
+
         // Save scoring data back to bracket
         async function saveScoringData(roundIndex, matchIndex) {
             if (!canEdit()) {
@@ -3452,12 +3478,17 @@
                         const nextMatchIndex = Math.floor(matchIndex / 2);
                         const nextMatch = currentBracket.rounds[nextRoundIndex].matches[nextMatchIndex];
                         
-                        // Place winner in appropriate slot (teamA or teamB) with score reset to 0
+                        // Place winner in appropriate slot (teamA or teamB) and reset score/match state
                         if (matchIndex % 2 === 0) {
-                            nextMatch.teamA = { ...winner, score: 0 };
+                            nextMatch.teamA = cleanTeamForNext(winner);
                         } else {
-                            nextMatch.teamB = { ...winner, score: 0 };
+                            nextMatch.teamB = cleanTeamForNext(winner);
                         }
+                        // Ensure next match scores are reset
+                        nextMatch.teamA.score = nextMatch.teamA.score || 0;
+                        nextMatch.teamB.score = nextMatch.teamB.score || 0;
+                        nextMatch.events = [];
+                        nextMatch.status = 'upcoming';
                     } else {
                         // This is the finals - set champion
                         currentBracket.champion = {

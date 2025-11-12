@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": ".",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -15,21 +15,19 @@
       "firestore.rules"
     ],
     "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+      { "source": "/", "destination": "/index-premium.html" },
+      { "source": "**", "destination": "/index-premium.html" }
     ],
     "headers": [
       {
         "source": "**/*.@(js|css)",
         "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=31536000"
-          }
+          { "key": "Cache-Control", "value": "max-age=31536000" }
         ]
       }
+    ],
+    "redirects": [
+      { "source": "/index.html", "destination": "/index-premium.html", "type": 301 }
     ]
   }
 }
